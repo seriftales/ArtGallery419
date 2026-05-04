@@ -6,7 +6,7 @@ const pool = require('./src/config/db'); // Veritabanı bağlantısını tetikle
 const app = express();
 // Gelen isteklerin gövdesindeki (body) JSON verilerini okuyabilmemizi sağlar
 app.use(express.json()); 
-
+app.use(cors()); // Tüm dış isteklere izin ver
 //router tanımları 
 const authRoutes = require('./src/routes/authRoutes');
 app.use('/api/auth', authRoutes);
