@@ -109,4 +109,6 @@ VITE_API_URL=http://localhost:5000/api
  Terminalde çıkan http://localhost:5173/ linkine tıklayarak siteye erişebilirsiniz.
  
  Backend çalıştırmak için de backend dizini altına gidin ve npm run dev komutunu çalıştırın.
+ 
+ NOT : KENDI BRANCHLARINIZI OLUŞTURUN VE PULL REQUEST ATIN 
 
