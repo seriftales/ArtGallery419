@@ -23,4 +23,18 @@ const verifyToken = (req, res, next) => {
     }
 };
 
-module.exports = verifyToken;
+const isAdmin = (req, res, next) => {
+    // ÖNEMLİ: Bu middleware her zaman 'verifyToken'dan SONRA çalışmalıdır.
+    // Bu yüzden req.user objesinin dolu olduğundan eminiz.
+    
+    console.log("isAdmin middleware çalıştı. Kullanıcı rolü:", req.user.role); // Debug için ekledim
+
+    if (req.user && req.user.role === 'Admin') {
+        next(); // Kullanıcı Admin ise bir sonraki fonksiyona (Controller) geç
+    } else {
+        // 403 Forbidden: "Kim olduğunu biliyorum ama bu odaya girmeye yetkin yok."
+        return res.status(403).json({ error: "Erişim reddedildi. Bu işlem için Admin yetkisi gereklidir." });
+    }
+};
+
+module.exports = { verifyToken, isAdmin };
