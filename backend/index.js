@@ -2,6 +2,7 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const pool = require('./src/config/db'); // Veritabanı bağlantısını tetikler
+const path = require('path'); // Sayfanın en üstüne import etmeyi unutma
 
 const app = express();
 // Gelen isteklerin gövdesindeki (body) JSON verilerini okuyabilmemizi sağlar
@@ -21,6 +22,8 @@ app.use('/api/artworks', artworkRoutes);
 
 const favoriteRoutes = require('./src/routes/favoriteRoutes');
 app.use('/api/favorites', favoriteRoutes);
+
+app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
 
 // --- MIDDLEWARES (Ara Katmanlar) ---

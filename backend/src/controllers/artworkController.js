@@ -63,7 +63,54 @@ const deleteArtwork = async (req, res) => {
     }
 };
 
+const addArtwork = async (req, res) => {
+    // 1. Frontend'den gelen veriyi body'den çıkar
+    const { artistId, title, description, price, category, imageUrl: bodyImageUrl } = req.body;
+
+    // Senior Manevrası: Eğer fiziksel dosya gelirse (Multer), onun yolunu al. 
+    // Eğer gelmezse (Thunder Client ücretsiz sürüm), body içindeki imageUrl metnini al.
+    const finalImageUrl = req.file ? `/uploads/${req.file.filename}` : bodyImageUrl;
+
+    if (!artistId || !title || !price || !finalImageUrl) {
+        return res.status(400).json({ error: "Eksik bilgi! Lütfen tüm alanları (veya imageUrl metnini) doldurun." });
+    }
+    
+    // SENİOR DOKUNUŞU: Girdi Doğrulama (Input Validation)
+    // Veritabanına inmeden önce zorunlu alanların dolu olduğundan emin ol.
+    if (!artistId || !title || !price) {
+        return res.status(400).json({ error: "Sanatçı ID, Başlık ve Fiyat alanları zorunludur!" });
+    }
+
+    try {
+        // 2. Referans Bütünlüğü (Referential Integrity) Kontrolü
+        // Frontend saçma sapan bir artistId göndermiş olabilir. Önce o sanatçı gerçekten var mı diye bakıyoruz.
+        const checkArtist = await pool.query("SELECT Artist_ID FROM Artists WHERE Artist_ID = $1", [artistId]);
+        
+        if (checkArtist.rows.length === 0) {
+            return res.status(404).json({ error: "Veritabanında bu ID'ye sahip bir sanatçı bulunamadı." });
+        }
+
+        // 3. Her şey yolundaysa yeni eseri veritabanına kaydet
+        const newArtwork = await pool.query(
+            `INSERT INTO Artworks (Artist_ID, Title, Description, Price, Category, Image_URL) 
+             VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`,
+            [artistId, title, description, price, category, finalImageUrl]
+        );
+
+        res.status(201).json({
+            success: true,
+            message: "Yeni eser başarıyla galeriye eklendi.",
+            data: newArtwork.rows[0]
+        });
+
+    } catch (error) {
+        console.error("Eser eklerken hata:", error.message);
+        res.status(500).json({ error: "Sunucu hatası, eser eklenemedi." });
+    }
+};
+
 module.exports = {
     getAllArtworks,
-    deleteArtwork
+    deleteArtwork,
+    addArtwork
 };
