@@ -19,6 +19,8 @@ app.use('/api/user', userRoutes);
 const artworkRoutes = require('./src/routes/artworkRoutes');
 app.use('/api/artworks', artworkRoutes); 
 
+const favoriteRoutes = require('./src/routes/favoriteRoutes');
+app.use('/api/favorites', favoriteRoutes);
 
 
 // --- MIDDLEWARES (Ara Katmanlar) ---
