@@ -14,10 +14,25 @@ CREATE TABLE Users (
     Created_At TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+-- ER Diyagramına eklemek gerek 
+CREATE TABLE Artists (
+    Artist_ID UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    User_ID UUID REFERENCES Users(User_ID) ON DELETE SET NULL, -- Opsiyonel: Yaşayan sanatçıysa User ile eşleşir
+    Full_Name VARCHAR(150) NOT NULL,
+    Biography TEXT,
+    Birth_Date DATE,
+    Death_Date DATE, -- Picasso için burası dolu olacak
+    Nationality VARCHAR(50),
+    Artist_Image VARCHAR(255),
+    Created_At TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+
+
 -- 3. SANAT ESERLERİ TABLOSU (Madde 1: Eserleri İnceleme)
 CREATE TABLE Artworks (
-    Artwork_ID UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    Artist_ID UUID REFERENCES Users(User_ID) ON DELETE CASCADE,
+  Artwork_ID UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    Artist_ID UUID REFERENCES Artists(Artist_ID) ON DELETE CASCADE, -- Artık Artist tablosuna bakıyor
     Title VARCHAR(150) NOT NULL,
     Description TEXT,
     Price NUMERIC(10,2) NOT NULL CHECK (Price >= 0), -- Para birimleri NUMERIC olmalı

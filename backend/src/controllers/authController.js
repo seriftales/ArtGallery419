@@ -39,7 +39,7 @@ const login = async (req, res) => {
 const register = async (req, res) => {
     try {
         const { firstName, lastName, email, password, role } = req.body;
-        
+        console.log(req.body) ; 
         // 1. Şifreyi güvenli hale getir
         const salt = await bcrypt.genSalt(10);
         const passwordHash = await bcrypt.hash(password, salt);
