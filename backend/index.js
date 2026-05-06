@@ -7,6 +7,8 @@ const app = express();
 // Gelen isteklerin gövdesindeki (body) JSON verilerini okuyabilmemizi sağlar
 app.use(express.json()); 
 app.use(cors()); // Tüm dış isteklere izin ver
+
+
 //router tanımları 
 const authRoutes = require('./src/routes/authRoutes');
 app.use('/api/auth', authRoutes);
@@ -14,6 +16,8 @@ app.use('/api/auth', authRoutes);
 const userRoutes = require('./src/routes/userRoutes');
 app.use('/api/user', userRoutes);
 
+const artworkRoutes = require('./src/routes/artworkRoutes');
+app.use('/api/artworks', artworkRoutes); 
 
 
 
