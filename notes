@@ -22,7 +22,7 @@ eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJjMjhmYmFlMC0xYzI0LTRlYWUtYTk
   "password":"123456"
 }
 
-4c47e336-089d-46b8-a5f4-c2d4c9512dcf
+eventıd-> 4c47e336-089d-46b8-a5f4-c2d4c9512dcf
 
 
 {
@@ -30,4 +30,7 @@ eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJjMjhmYmFlMC0xYzI0LTRlYWUtYTk
   "participantCount": 2
 }
 
-b114a825-0c27-4524-aa32-1cdc5aa39e06
+    "reservation_id": "62a74449-452f-4f65-ad62-34dc694a4297",
+
+
+http://localhost:5005/api/reservations/62a74449-452f-4f65-ad62-34dc694a4297
