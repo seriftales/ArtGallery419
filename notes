@@ -1,0 +1,10 @@
+#Veritabanına bağlanma :
+sudo -u postgres psql
+\c artgallery
+
+
+#Backend sunucusunu ayağa kaldırma 
+cd ArtGallery419/backend
+npm run dev
+
+admin token : eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI4Yjc0ZTVhOS04Y2VjLTQ1NTgtYTJjMS1iZWMyNDRmMzA5ZjIiLCJyb2xlIjoiQWRtaW4iLCJpYXQiOjE3NzgxNzk3MTIsImV4cCI6MTc3ODE4MzMxMn0.7nle0O6ZoC_a84qJHYFxHbOpia946Zmc_8WLf0LLUUI

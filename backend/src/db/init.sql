@@ -42,14 +42,16 @@ CREATE TABLE Artworks (
     Created_At TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- 4. ETKİNLİKLER VE ATÖLYELER TABLOSU (Madde 2: Etkinlikleri Görüntüleme)
+-- 4. ETKİNLİKLER VE ATÖLYELER TABLOSU (Madde 2: Etkinlikleri Görüntüleme) burada iki adet attribute ekledim
 CREATE TABLE Events (
     Event_ID UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     Organizer_ID UUID REFERENCES Users(User_ID) ON DELETE CASCADE,
     Title VARCHAR(150) NOT NULL,
+    Description TEXT, -- ER ye ekle
     Event_Date TIMESTAMP NOT NULL,
     Capacity INTEGER NOT NULL CHECK (Capacity >= 0), -- Kontenjan eksiye düşemez!
     Price NUMERIC(10,2) NOT NULL CHECK (Price >= 0),
+    Image_URL VARCHAR(255), -- ER ye ekle 
     Created_At TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 

@@ -25,6 +25,11 @@ app.use('/api/favorites', favoriteRoutes);
 
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
+const eventRoutes = require('./src/routes/eventRoutes');
+app.use('/api/events', eventRoutes);
+
+
+
 
 // --- MIDDLEWARES (Ara Katmanlar) ---
 // Frontend'in (Farklı port) backend'e istek atabilmesi için güvenlik kilidini açar
