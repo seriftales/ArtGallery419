@@ -177,4 +177,35 @@ const cancelReservation = async (req, res) => {
     }
 };
 
-module.exports = { makeReservation, updateReservation, cancelReservation };
+const getMyReservations = async (req, res) => {
+    const userId = req.user.userId;
+
+    try {
+        const query = `
+            SELECT 
+                r.Reservation_ID, 
+                r.Participant_Count, 
+                r.Total_Price, 
+                TO_CHAR(r.Created_At, 'YYYY-MM-DD HH24:MI') as Booking_Date,
+                e.Title as Event_Title,
+                TO_CHAR(e.Event_Date, 'YYYY-MM-DD HH24:MI') as Event_Date
+            FROM Reservations r
+            INNER JOIN Events e ON r.Event_ID = e.Event_ID
+            WHERE r.User_ID = $1
+            ORDER BY r.Created_At DESC
+        `;
+
+        const { rows } = await pool.query(query, [userId]);
+
+        res.status(200).json({ 
+            success: true, 
+            count: rows.length, 
+            data: rows 
+        });
+    } catch (error) {
+        console.error("Rezervasyon geçmişi çekilirken hata:", error.message);
+        res.status(500).json({ error: "Rezervasyonlar getirilemedi." });
+    }
+};
+
+module.exports = { makeReservation, updateReservation, cancelReservation,getMyReservations };

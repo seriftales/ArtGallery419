@@ -35,6 +35,8 @@ app.use('/api/events', eventRoutes);
 const reservationRoutes = require('./src/routes/reservationRoutes');
 app.use('/api/reservations', reservationRoutes);
 
+const orderRoutes = require('./src/routes/orderRoutes');
+app.use('/api/orders', orderRoutes);
 
 
 
