@@ -41,6 +41,9 @@ app.use('/api/orders', orderRoutes);
 const comparisonRoutes = require('./src/routes/comparisonRoutes');
 app.use('/api/comparisons', comparisonRoutes);
 
+const reviewRoutes = require('./src/routes/reviewRoutes');
+app.use('/api/reviews', reviewRoutes);
+
 
 
 // --- MIDDLEWARES (Ara Katmanlar) ---

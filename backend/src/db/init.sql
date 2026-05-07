@@ -100,6 +100,8 @@ CREATE TABLE Reviews (
     Target_Type VARCHAR(20) CHECK (Target_Type IN ('Artwork', 'Event')) NOT NULL,
     Rating INTEGER CHECK (Rating >= 1 AND Rating <= 5), -- Puanlama 1-5 arası olmalı
     Comment_Text TEXT,
+    Reply_Text TEXT;--ER ye ekle: Sanatçı veya organizatörün yoruma vereceği cevap için alan
+    Replied_At TIMESTAMP;--ER ye ekle: Cevap verildiği zamanı tutmak için alan
     Helpful_Votes INTEGER DEFAULT 0,
     Created_At TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
