@@ -76,4 +76,29 @@ const getFavorites = async (req, res) => {
     }
 };
 
-module.exports = { addFavorite, getFavorites };
+const removeFavorite = async (req, res) => {
+    // Kimin sildiğini token'dan, hangi eserin silineceğini URL parametresinden alıyoruz
+    const userId = req.user.userId; 
+    const { id: artworkId } = req.params; 
+
+    try {
+        // Senior Dokunuşu: Sadece eseri değil, O KULLANICIYA AİT olan o eseri siliyoruz.
+        // Yoksa başkasının favorisini silme zafiyeti doğar.
+        const result = await pool.query(
+            "DELETE FROM Favorites WHERE User_ID = $1 AND Artwork_ID = $2 RETURNING *",
+            [userId, artworkId]
+        );
+
+        // Eğer rowCount 0 ise, ya öyle bir eser yoktur ya da bu kullanıcının favorisinde değildir
+        if (result.rowCount === 0) {
+            return res.status(404).json({ error: "Bu eser favorilerinizde bulunamadı." });
+        }
+
+        res.status(200).json({ success: true, message: "Eser başarıyla favorilerden çıkarıldı." });
+
+    } catch (error) {
+        console.error("Favori silme hatası:", error.message);
+        res.status(500).json({ error: "Sunucu hatası, işlem gerçekleştirilemedi." });
+    }
+};
+module.exports = { addFavorite, getFavorites , removeFavorite};
