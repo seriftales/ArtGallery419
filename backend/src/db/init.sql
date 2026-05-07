@@ -31,7 +31,7 @@ CREATE TABLE Artists (
 
 -- 3. SANAT ESERLERİ TABLOSU (Madde 1: Eserleri İnceleme)
 CREATE TABLE Artworks (
-  Artwork_ID UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    Artwork_ID UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     Artist_ID UUID REFERENCES Artists(Artist_ID) ON DELETE CASCADE, -- Artık Artist tablosuna bakıyor
     Title VARCHAR(150) NOT NULL,
     Description TEXT,
@@ -120,5 +120,6 @@ CREATE TABLE Saved_Comparisons (
     User_ID UUID REFERENCES Users(User_ID) ON DELETE CASCADE,
     Comparison_Type VARCHAR(20) CHECK (Comparison_Type IN ('Artwork', 'Event')) NOT NULL,
     Items_Data JSONB NOT NULL, -- Karşılaştırılan öğelerin ID'leri ve özet verileri burada dizi olarak tutulacak
+    Title VARCHAR(100), -- ER ye ekle: Kullanıcı karşılaştırmaya bir başlık verebilir
     Created_At TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );

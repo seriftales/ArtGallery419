@@ -22,6 +22,12 @@ eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJjMjhmYmFlMC0xYzI0LTRlYWUtYTk
   "password":"123456"
 }
 
+{
+  "email":"mirac@gallery.com",
+  "password":"123456123456"
+}
+
+
 eventıd-> 4c47e336-089d-46b8-a5f4-c2d4c9512dcf
 
 
@@ -36,3 +42,6 @@ eventıd-> 4c47e336-089d-46b8-a5f4-c2d4c9512dcf
 http://localhost:5005/api/reservations/62a74449-452f-4f65-ad62-34dc694a4297
 
 artworkID -> 848f59de-db47-4416-aca1-66206b5c0232
+12256a33-0178-417f-9d33-417ac7d47d96
+
+http://localhost:5005/api/comparisons?type=Artwork&ids=848f59de-db47-4416-aca1-66206b5c0232,12256a33-0178-417f-9d33-417ac7d47d96
