@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const {verifyToken} = require('../middlewares/authMiddleware');
+const { updateProfile, changePassword } = require('../controllers/userController');
 
 // Bu rota korunuyor! verifyToken'dan geçemeyen buraya giremez.
 router.get('/profile', verifyToken, (req, res) => {
@@ -9,5 +10,8 @@ router.get('/profile', verifyToken, (req, res) => {
         userData: req.user // Token içinden çıkan userId ve role burada
     });
 });
+
+router.patch('/profile', verifyToken, updateProfile);
+router.put('/change-password', verifyToken, changePassword);
 
 module.exports = router;
