@@ -30,6 +30,7 @@ const addEvent = async (req, res) => {
 
 // 2. Etkinlikleri Listeleme (Herkese Açık)
 const getAllEvents = async (req, res) => {
+    
     try {
         const query = `
             SELECT 

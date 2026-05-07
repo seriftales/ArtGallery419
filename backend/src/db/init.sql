@@ -61,6 +61,7 @@ CREATE TABLE Reservations (
     User_ID UUID REFERENCES Users(User_ID) ON DELETE CASCADE,
     Event_ID UUID REFERENCES Events(Event_ID) ON DELETE CASCADE,
     Participant_Count INTEGER NOT NULL CHECK (Participant_Count > 0),
+    Total_Price NUMERIC(10,2) NOT NULL, --ER ye ekle
     Status VARCHAR(20) CHECK (Status IN ('Pending', 'Confirmed', 'Cancelled')) DEFAULT 'Pending',
     Created_At TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );

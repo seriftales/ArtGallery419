@@ -16,3 +16,18 @@ eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJjMjhmYmFlMC0xYzI0LTRlYWUtYTk
 848f59de-db47-4416-aca1-66206b5c0232
 12256a33-0178-417f-9d33-417ac7d47d96
 6e2e3ce4-ff32-4fd2-bebc-5ce9e22b233f
+
+{
+  "email":"kaan@test.com",
+  "password":"123456"
+}
+
+4c47e336-089d-46b8-a5f4-c2d4c9512dcf
+
+
+{
+  "eventId": "4c47e336-089d-46b8-a5f4-c2d4c9512dcf",
+  "participantCount": 2
+}
+
+b114a825-0c27-4524-aa32-1cdc5aa39e06

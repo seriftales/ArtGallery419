@@ -5,7 +5,11 @@ const pool = require('./src/config/db'); // Veritabanı bağlantısını tetikle
 const path = require('path'); // Sayfanın en üstüne import etmeyi unutma
 
 const app = express();
-// Gelen isteklerin gövdesindeki (body) JSON verilerini okuyabilmemizi sağlar
+app.get('/ping', (req, res) => {
+    console.log("PING GELDİ! Sunucu hayatta.");
+    res.status(200).send("PONG - Sunucu Çalışıyor!");
+});
+
 app.use(express.json()); 
 app.use(cors()); // Tüm dış isteklere izin ver
 
@@ -28,6 +32,9 @@ app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 const eventRoutes = require('./src/routes/eventRoutes');
 app.use('/api/events', eventRoutes);
 
+const reservationRoutes = require('./src/routes/reservationRoutes');
+app.use('/api/reservations', reservationRoutes);
+
 
 
 
@@ -47,7 +54,7 @@ app.get('/api/health', (req, res) => {
 });
 
 // --- SUNUCUYU BAŞLATMA ---
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5005;
 
 app.listen(PORT, () => {
     console.log(`🚀 Sunucu http://localhost:${PORT} adresinde çalışıyor`);
