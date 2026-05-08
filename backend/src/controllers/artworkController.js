@@ -109,8 +109,33 @@ const addArtwork = async (req, res) => {
     }
 };
 
+// Eserin Beğeni Sayısını 1 Artır (Spam'e açık versiyon)
+const incrementLike = async (req, res) => {
+    const { artworkId } = req.params;
+
+    try {
+        const result = await pool.query(
+            "UPDATE Artworks SET Like_Count = Like_Count + 1 WHERE Artwork_ID = $1 RETURNING Like_Count",
+            [artworkId]
+        );
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: "Eser bulunamadı." });
+        }
+
+        res.status(200).json({ 
+            success: true, 
+            message: "Eser beğenildi.", 
+            likes: result.rows[0].like_count 
+        });
+    } catch (error) {
+        res.status(500).json({ error: "Beğeni işlemi başarısız." });
+    }
+};
+
 module.exports = {
     getAllArtworks,
     deleteArtwork,
-    addArtwork
+    addArtwork,
+    incrementLike
 };

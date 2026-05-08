@@ -40,6 +40,7 @@ CREATE TABLE Artworks (
     Image_URL VARCHAR(255),
     Stock_Status VARCHAR(20) DEFAULT 'Available',
     View_Count INT DEFAULT 0, --ER ye ekle: Eserin kaç kez görüntülendiğini takip etmek için
+    Like_Count INT DEFAULT 0; --ER ye ekle: Eserin kaç kez beğenildiğini takip etmek için
     Created_At TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
