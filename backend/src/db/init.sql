@@ -37,13 +37,13 @@ CREATE TABLE Artworks (
     Image_URL VARCHAR(255),
     Stock_Status VARCHAR(20) DEFAULT 'Available',
     View_Count INT DEFAULT 0, --ER ye ekle: Eserin kaç kez görüntülendiğini takip etmek için
-    Like_Count INT DEFAULT 0; --ER ye ekle: Eserin kaç kez beğenildiğini takip etmek için
+    Like_Count INT DEFAULT 0, --ER ye ekle: Eserin kaç kez beğenildiğini takip etmek için
     Is_Campaign BOOLEAN DEFAULT FALSE, --ER ye ekle: Kampanyalı eserleri işaretlemek için
-    Campaign_Discount_Percent INT DEFAULT 0;--ER ye ekle: Kampanya varsa indirim yüzdesi
+    Campaign_Discount_Percent INT DEFAULT 0,--ER ye ekle: Kampanya varsa indirim yüzdesi
     Created_At TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- 4. ETKİNLİKLER VE ATÖLYELER TABLOSU m
+-- 4. ETKİNLİKLER VE ATÖLYELER TABLOSU 
 CREATE TABLE Events (
     Event_ID UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     Organizer_ID UUID REFERENCES Users(User_ID) ON DELETE CASCADE,
@@ -87,7 +87,7 @@ CREATE TABLE Order_Items (
     Price_At_Purchase NUMERIC(10,2) NOT NULL CHECK (Price_At_Purchase >= 0)
 );
 
--- 8. FAVORİLER 
+-- 8. FAVORİLER TABLOSU
 CREATE TABLE Favorites (
     User_ID UUID REFERENCES Users(User_ID) ON DELETE CASCADE,
     Artwork_ID UUID REFERENCES Artworks(Artwork_ID) ON DELETE CASCADE,
@@ -102,8 +102,8 @@ CREATE TABLE Reviews (
     Target_Type VARCHAR(20) CHECK (Target_Type IN ('Artwork', 'Event')) NOT NULL,
     Rating INTEGER CHECK (Rating >= 1 AND Rating <= 5), 
     Comment_Text TEXT,
-    Reply_Text TEXT;--ER ye ekle: Sanatçı veya organizatörün yoruma vereceği cevap için alan
-    Replied_At TIMESTAMP;--ER ye ekle: Cevap verildiği zamanı tutmak için alan
+    Reply_Text TEXT,--ER ye ekle: Sanatçı veya organizatörün yoruma vereceği cevap için alan
+    Replied_At TIMESTAMP,--ER ye ekle: Cevap verildiği zamanı tutmak için alan
     Helpful_Votes INTEGER DEFAULT 0,
     Created_At TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -113,7 +113,7 @@ CREATE TABLE Support_Tickets (
     Ticket_ID UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     User_ID UUID REFERENCES Users(User_ID) ON DELETE CASCADE,
     Subject VARCHAR(150) NOT NULL,
-    Message TEXT NOT NULL, --ER Den cıkar 
+    --Message TEXT NOT NULL, //ER Den cıkar 
     Status VARCHAR(20) CHECK (Status IN ('Open', 'Resolved', 'Closed')) DEFAULT 'Open',
     Created_At TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
