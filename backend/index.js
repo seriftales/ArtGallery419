@@ -9,7 +9,7 @@ const app = express();
 const corsOptions = {
 
     //Frontend calıstığı adres 
-    origin: 'http://localhost:5005', 
+    origin: 'http://localhost:3000', 
     
     //İzin verilen methodlar
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'], 
