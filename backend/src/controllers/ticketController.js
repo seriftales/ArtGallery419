@@ -1,40 +1,38 @@
 const pool = require('../config/db');
 
-// 1. Yeni Destek Talebi Açma (Transaction İçerir)
+// Destek Talebi Oluşturma
 const createTicket = async (req, res) => {
     const { subject, message } = req.body;
     const userId = req.user.userId;
 
-    const client = await pool.connect(); // Transaction için özel bağlantı alıyoruz
+    const client = await pool.connect(); 
 
     try {
-        await client.query('BEGIN'); // Gümrük kapılarını kitle, işlem başlıyor!
+        await client.query('BEGIN'); 
 
-        // Adım 1: Ana tabloya bileti oluştur
         const ticketResult = await client.query(
             "INSERT INTO Support_Tickets (User_ID, Subject) VALUES ($1, $2) RETURNING Ticket_ID",
             [userId, subject]
         );
         const newTicketId = ticketResult.rows[0].ticket_id;
 
-        // Adım 2: Detay tablosuna ilk mesajı yaz
         await client.query(
             "INSERT INTO Ticket_Messages (Ticket_ID, Sender_ID, Message) VALUES ($1, $2, $3)",
             [newTicketId, userId, message]
         );
 
-        await client.query('COMMIT'); // Her şey başarılı, veritabanına kalıcı olarak yaz.
+        await client.query('COMMIT'); 
         res.status(201).json({ success: true, message: "Destek talebiniz başarıyla oluşturuldu.", ticketId: newTicketId });
     } catch (error) {
-        await client.query('ROLLBACK'); // Hata çıkarsa her şeyi geri al (Temizlik)
+        await client.query('ROLLBACK'); 
         console.error("Bilet oluşturma hatası:", error.message);
         res.status(500).json({ error: "Destek talebi oluşturulamadı." });
     } finally {
-        client.release(); // Bağlantıyı havuza geri bırak (Önemli!)
+        client.release(); 
     }
 };
 
-// 2. Kullanıcının Kendi Taleplerini Görüntülemesi
+//Talep Listesi (Kullanıcının Kendi Talepleri)
 const getMyTickets = async (req, res) => {
     const userId = req.user.userId;
     try {
@@ -48,14 +46,13 @@ const getMyTickets = async (req, res) => {
     }
 };
 
-// 3. Mesaj Sistemi (Mevcut Talebe Cevap Yazma)
+// Bilet Detayına Mesaj Yazma
 const replyToTicket = async (req, res) => {
     const { ticketId } = req.params;
     const { message } = req.body;
     const userId = req.user.userId;
 
     try {
-        // Güvenlik: Bu bilet gerçekten bu adama mı ait? (IDOR Koruması)
         const ticketCheck = await pool.query(
             "SELECT * FROM Support_Tickets WHERE Ticket_ID = $1 AND User_ID = $2",
             [ticketId, userId]
@@ -65,7 +62,6 @@ const replyToTicket = async (req, res) => {
             return res.status(403).json({ error: "Bu bilete mesaj yazma yetkiniz yok." });
         }
 
-        // Bilet onunsa mesajı ekle
         const result = await pool.query(
             "INSERT INTO Ticket_Messages (Ticket_ID, Sender_ID, Message) VALUES ($1, $2, $3) RETURNING *",
             [ticketId, userId, message]
@@ -77,7 +73,7 @@ const replyToTicket = async (req, res) => {
     }
 };
 
-// 4. Biletin İçine Girip Tüm Mesajları Okuma
+// Bilet Detaylarını Görüntüleme
 const getTicketDetails = async (req, res) => {
     const { ticketId } = req.params;
     const userId = req.user.userId;
@@ -101,10 +97,11 @@ const getTicketDetails = async (req, res) => {
     }
 };
 
+// Bilet Durumu Güncelleme (Admin/Manager için)
 const updateTicketStatus = async (req, res) => {
     const { ticketId } = req.params;
     const { status } = req.body;
-    const userId = req.user.userId; // SENIOR DOKUNUŞU: İstek atan kişinin kimliği
+    const userId = req.user.userId;
 
     const allowedStatuses = ['Open', 'Resolved', 'Closed'];
     if (!allowedStatuses.includes(status)) {
@@ -112,7 +109,6 @@ const updateTicketStatus = async (req, res) => {
     }
 
     try {
-        // ZIRH EKLENDİ: Sadece User_ID eşleşirse güncelleme yapılır!
         const result = await pool.query(
             "UPDATE Support_Tickets SET Status = $1 WHERE Ticket_ID = $2 AND User_ID = $3 RETURNING *",
             [status, ticketId, userId]
@@ -133,4 +129,9 @@ const updateTicketStatus = async (req, res) => {
     }
 };
 
-module.exports = { createTicket, getMyTickets, replyToTicket, getTicketDetails , updateTicketStatus};
+module.exports = { 
+    createTicket, 
+    getMyTickets, 
+    replyToTicket, 
+    getTicketDetails , 
+    updateTicketStatus};

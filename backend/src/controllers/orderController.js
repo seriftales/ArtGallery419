@@ -1,5 +1,6 @@
-const pool = require('../config/db.js'); // Veritabanı bağlantı dosyanın yolunu kendi projene göre ayarla
+const pool = require('../config/db.js'); 
 
+// Sipariş Oluşturma 
 const createOrder = async (req, res) => {
     const userId = req.user.userId;
     const { artworkId, paymentMethod } = req.body;
@@ -13,7 +14,6 @@ const createOrder = async (req, res) => {
     try {
         await client.query('BEGIN');
 
-        // 1. Eseri bul, müsaitliğini kontrol et ve başkası almasın diye kilitle (FOR UPDATE)
         const artworkQuery = await client.query(
             "SELECT Price, Stock_Status FROM Artworks WHERE Artwork_ID = $1 FOR UPDATE",
             [artworkId]
@@ -25,12 +25,10 @@ const createOrder = async (req, res) => {
 
         const artwork = artworkQuery.rows[0];
 
-        // Eser zaten satılmış mı?
         if (artwork.stock_status !== 'Available') {
             throw new Error("Bu eser zaten satılmış veya şu an rezerve durumda.");
         }
 
-        // 2. Ana Siparişi (Fatura) Oluştur
         const orderQuery = await client.query(
             `INSERT INTO Orders (User_ID, Total_Amount, Payment_Method, Status) 
              VALUES ($1, $2, $3, 'Completed') RETURNING Order_ID`,
@@ -38,15 +36,12 @@ const createOrder = async (req, res) => {
         );
         const newOrderId = orderQuery.rows[0].order_id;
 
-        // 3. Sipariş Kalemini (Sepet İçeriğini) Ekle
-        // O anki fiyatı (Price_At_Purchase) veritabanından çekip yazıyoruz ki ileride eserin fiyatı değişirse fatura bozulmasın.
         await client.query(
             `INSERT INTO Order_Items (Order_ID, Artwork_ID, Price_At_Purchase) 
              VALUES ($1, $2, $3)`,
             [newOrderId, artworkId, artwork.price]
         );
 
-        // 4. Eserin Stok Durumunu "Satıldı" Yap
         await client.query(
             "UPDATE Artworks SET Stock_Status = 'Sold' WHERE Artwork_ID = $1",
             [artworkId]
@@ -71,12 +66,11 @@ const createOrder = async (req, res) => {
     }
 };
 
+//Sipariş Geçmişi Görüntüleme
 const getMyOrders = async (req, res) => {
     const userId = req.user.userId;
 
     try {
-        // Senior Dokunuşu: Fatura, Sepet Kalemi ve Eser tablolarını JOIN ile birleştiriyoruz.
-        // Tarihe göre azalan (DESC) sırada çekiyoruz ki en yeni sipariş en üstte görünsün.
         const query = `
             SELECT 
                 o.Order_ID, 
@@ -106,4 +100,6 @@ const getMyOrders = async (req, res) => {
     }
 };
 
-module.exports = { createOrder, getMyOrders };
+module.exports = { 
+    createOrder, 
+    getMyOrders };

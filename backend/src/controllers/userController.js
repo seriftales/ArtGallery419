@@ -1,14 +1,12 @@
-const pool = require('../config/db.js'); // Veritabanı bağlantı dosyanın yolunu kendi projene göre ayarla
+const pool = require('../config/db.js'); 
 const bcrypt = require('bcryptjs');
 
-// 1. Profil Bilgilerini Güncelleme (İsim, Soyisim ve E-posta)
+// Profil Bilgilerini Güncelleme 
 const updateProfile = async (req, res) => {
     const userId = req.user.userId;
-    // req.body'den artık name değil, firstName ve lastName bekliyoruz
     const { firstName, lastName, email } = req.body;
 
     try {
-        // E-posta değiştirilmek isteniyorsa çakışma kontrolü yap
         if (email) {
             const emailCheck = await pool.query("SELECT * FROM Users WHERE Email = $1 AND User_ID != $2", [email, userId]);
             if (emailCheck.rows.length > 0) {
@@ -16,7 +14,6 @@ const updateProfile = async (req, res) => {
             }
         }
 
-        // COALESCE ile sadece gönderilen alanları güncelle, gönderilmeyenleri eski halinde bırak
         const updatedUser = await pool.query(
             `UPDATE Users 
              SET First_Name = COALESCE($1, First_Name), 
@@ -34,7 +31,7 @@ const updateProfile = async (req, res) => {
     }
 };
 
-// 2. Şifre Değiştirme (Eski şifre doğrulamalı)
+// Şifre Değiştirme
 const changePassword = async (req, res) => {
     const userId = req.user.userId;
     const { oldPassword, newPassword } = req.body;
@@ -46,7 +43,7 @@ const changePassword = async (req, res) => {
     try {
         const userQuery = await pool.query("SELECT Password_Hash FROM Users WHERE User_ID = $1", [userId]);
         const user = userQuery.rows[0];
-        console.log("Kullanıcı verisi:", user); // Şifre hash'ini kontrol etmek için ekledik
+        console.log("Kullanıcı verisi:", user);
 
         const isMatch = await bcrypt.compare(oldPassword, user.password_hash);
         if (!isMatch) {
@@ -65,4 +62,6 @@ const changePassword = async (req, res) => {
     }
 };
 
-module.exports = { updateProfile, changePassword };
+module.exports = { 
+    updateProfile, 
+    changePassword };

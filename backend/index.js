@@ -1,20 +1,32 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
-const pool = require('./src/config/db'); // Veritabanı bağlantısını tetikler
-const path = require('path'); // Sayfanın en üstüne import etmeyi unutma
+const pool = require('./src/config/db'); // Veritabanı bağlantısı
+const path = require('path'); 
 
 const app = express();
-app.get('/ping', (req, res) => {
-    console.log("PING GELDİ! Sunucu hayatta.");
-    res.status(200).send("PONG - Sunucu Çalışıyor!");
-});
 
-app.use(express.json()); 
-app.use(cors()); // Tüm dış isteklere izin ver
+const corsOptions = {
+
+    //Frontend calıstığı adres 
+    origin: 'http://localhost:5005', 
+    
+    //İzin verilen methodlar
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'], 
+    
+    //Token ve Cookie paylaşma izinleri
+    credentials: true,
+    
+    //İzin verilen headerlar
+    allowedHeaders: ['Content-Type', 'Authorization'] 
+};
+
+app.use(cors(corsOptions)); 
+
+app.use(express.json()); //Body Parser
 
 
-//router tanımları 
+//ROTALAR : 
 const authRoutes = require('./src/routes/authRoutes');
 app.use('/api/auth', authRoutes);
 
@@ -54,13 +66,7 @@ const ticketRoutes = require('./src/routes/ticketRoutes');
 app.use('/api/tickets', ticketRoutes);
 
 
-// --- MIDDLEWARES (Ara Katmanlar) ---
-// Frontend'in (Farklı port) backend'e istek atabilmesi için güvenlik kilidini açar
-app.use(cors()); 
-
-
-// --- TEST ENDPOINT'İ ---
-// Sistemin çalışıp çalışmadığını kontrol etmek için basit bir rota
+//Test Endpoint
 app.get('/api/health', (req, res) => {
     res.status(200).json({ 
         status: 'success', 
@@ -69,7 +75,7 @@ app.get('/api/health', (req, res) => {
     });
 });
 
-// --- SUNUCUYU BAŞLATMA ---
+//Server Başlatma
 const PORT = process.env.PORT || 5005;
 
 app.listen(PORT, () => {

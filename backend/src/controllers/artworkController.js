@@ -1,10 +1,9 @@
-const pool = require('../config/db.js'); // Veritabanı bağlantı dosyanın yolunu kendi projene göre ayarla
+const pool = require('../config/db.js'); 
 
-// Tüm eserleri getir
+// Tüm eserleri getirme
 const getAllArtworks = async (req, res) => {
     try {
-        // Senior Dokunuşu: Sadece Artworks'ü çekmiyoruz, Artists tablosuyla birleştiriyoruz.
-        // Çünkü frontend'e "550e8400-e29b-..." gibi bir UUID göndermek hiçbir işe yaramaz.
+        
         const query = `
             SELECT 
                 aw.Artwork_ID, 
@@ -36,12 +35,13 @@ const getAllArtworks = async (req, res) => {
         });
     }
 };
+
+// Eseri Silme 
 const deleteArtwork = async (req, res) => {
-    // URL'den (parametrelerden) silinecek eserin ID'sini alıyoruz
+
     const { id } = req.params; 
 
     try {
-        // RETURNING * kısmı önemli; silinen veriyi geri döndürür, böylece gerçekten silindiğinden emin oluruz.
         const result = await pool.query(
             "DELETE FROM Artworks WHERE Artwork_ID = $1 RETURNING *", 
             [id]
@@ -63,34 +63,27 @@ const deleteArtwork = async (req, res) => {
     }
 };
 
+// Yeni Eser Ekleme
 const addArtwork = async (req, res) => {
-    // 1. Frontend'den gelen veriyi body'den çıkar
     const { artistId, title, description, price, category, imageUrl: bodyImageUrl } = req.body;
 
-    // Senior Manevrası: Eğer fiziksel dosya gelirse (Multer), onun yolunu al. 
-    // Eğer gelmezse (Thunder Client ücretsiz sürüm), body içindeki imageUrl metnini al.
     const finalImageUrl = req.file ? `/uploads/${req.file.filename}` : bodyImageUrl;
 
     if (!artistId || !title || !price || !finalImageUrl) {
-        return res.status(400).json({ error: "Eksik bilgi! Lütfen tüm alanları (veya imageUrl metnini) doldurun." });
+        return res.status(400).json({ error: "Eksik bilgi! Lütfen tüm alanları  doldurun." });
     }
     
-    // SENİOR DOKUNUŞU: Girdi Doğrulama (Input Validation)
-    // Veritabanına inmeden önce zorunlu alanların dolu olduğundan emin ol.
     if (!artistId || !title || !price) {
         return res.status(400).json({ error: "Sanatçı ID, Başlık ve Fiyat alanları zorunludur!" });
     }
 
     try {
-        // 2. Referans Bütünlüğü (Referential Integrity) Kontrolü
-        // Frontend saçma sapan bir artistId göndermiş olabilir. Önce o sanatçı gerçekten var mı diye bakıyoruz.
         const checkArtist = await pool.query("SELECT Artist_ID FROM Artists WHERE Artist_ID = $1", [artistId]);
         
         if (checkArtist.rows.length === 0) {
             return res.status(404).json({ error: "Veritabanında bu ID'ye sahip bir sanatçı bulunamadı." });
         }
 
-        // 3. Her şey yolundaysa yeni eseri veritabanına kaydet
         const newArtwork = await pool.query(
             `INSERT INTO Artworks (Artist_ID, Title, Description, Price, Category, Image_URL) 
              VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`,
@@ -109,7 +102,7 @@ const addArtwork = async (req, res) => {
     }
 };
 
-// Eserin Beğeni Sayısını 1 Artır (Spam'e açık versiyon)
+// Eseri Beğenme 
 const incrementLike = async (req, res) => {
     const { artworkId } = req.params;
 
@@ -136,7 +129,6 @@ const incrementLike = async (req, res) => {
 // Kampanyalı Eserleri Görüntüleme
 const getCampaignArtworks = async (req, res) => {
     try {
-        // Sadece Is_Campaign değeri TRUE olanları getiriyoruz
         const result = await pool.query(
             "SELECT * FROM Artworks WHERE Is_Campaign = TRUE"
         );
@@ -146,7 +138,6 @@ const getCampaignArtworks = async (req, res) => {
     }
 };
 
-// Modül exportlarına getCampaignArtworks'ü eklemeyi unutma!
 
 module.exports = {
     getAllArtworks,

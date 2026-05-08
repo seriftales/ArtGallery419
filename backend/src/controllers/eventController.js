@@ -1,13 +1,10 @@
-const pool = require('../config/db.js'); // Veritabanı bağlantı dosyanın yolunu kendi projene göre ayarla
+const pool = require('../config/db.js');
 
-// 1. Etkinlik Ekleme (Admin İçin - Mocking Destekli)
+// Etkinlik Ekleme 
 const addEvent = async (req, res) => {
-    // organizerId'yi tokendan (req.user) de alabilirsin, body'den de. 
-    // Ama güvenli olan tokendan almaktır (Senin auth yapına göre req.user.userId)
     const organizerId = req.user.userId; 
     const { title, eventDate, capacity, price, description, imageUrl: bodyImageUrl } = req.body;
 
-    // Resim fiziksel gelirse onu, gelmezse body'den gelen metni al
     const finalImageUrl = req.file ? `/uploads/${req.file.filename}` : bodyImageUrl;
 
     if (!title || !eventDate || !capacity || !price) {
@@ -28,7 +25,7 @@ const addEvent = async (req, res) => {
     }
 };
 
-// 2. Etkinlikleri Listeleme (Herkese Açık)
+// Etkinlikleri Listeleme 
 const getAllEvents = async (req, res) => {
     
     try {
@@ -47,7 +44,7 @@ const getAllEvents = async (req, res) => {
     }
 };
 
-// 3. Etkinlik Detayı (Herkese Açık)
+// Etkinlik Detayı 
 const getEventById = async (req, res) => {
     const { id } = req.params;
     try {
@@ -68,29 +65,25 @@ const getEventById = async (req, res) => {
     }
 };
 
+// Kampanyalı Etkinlikleri Listeleme
 const getCampaignEvents = async (req, res) => {
-    console.log("\n--- 🕵️‍♂️ DEBUG BAŞLADI: getCampaignEvents ---");
     try {
-        console.log("Adım 1: İstek API'ye ulaştı.");
         
-        // Hangi sorgunun çalıştığını net görelim
         const query = 'SELECT * FROM Events WHERE "is_campaign" = true';
-        console.log("Adım 2: SQL Sorgusu çalıştırılıyor ->", query);
         
         const result = await pool.query(query);
         
-        console.log("Adım 3: Veritabanı cevap verdi. Bulunan satır sayısı:", result.rowCount);
-        console.log("--- 🕵️‍♂️ DEBUG BİTTİ (BAŞARILI) ---\n");
         
         res.status(200).json({ success: true, data: result.rows });
     } catch (error) {
-        console.error("\n🚨 Adım 4: SİSTEM PATLADI! HATA YAKALANDI 🚨");
-        console.error("Hata Mesajı (Message):", error.message);
-        console.error("Hata Kodu (Code):", error.code); // PostgreSQL hata kodunu verir
-        console.error("--- 🕵️‍♂️ DEBUG BİTTİ (HATALI) ---\n");
-        
         res.status(500).json({ error: "Kampanyalı etkinlikler listelenemedi." });
+        console.error("Hata:", error.message);
+        
     }
 };
 
-module.exports = { addEvent, getAllEvents, getEventById, getCampaignEvents };
+module.exports = { 
+    addEvent, 
+    getAllEvents, 
+    getEventById, 
+    getCampaignEvents };

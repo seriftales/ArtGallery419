@@ -1,7 +1,7 @@
 const { Pool } = require('pg');
-require('dotenv').config(); // .env dosyasındaki gizli değişkenleri okumak için
+require('dotenv').config(); //env dosyasını yükle
 
-// Bağlantı havuzunu .env'den gelen verilerle oluşturuyoruz
+// Pool oluştur
 const pool = new Pool({
   user: process.env.DB_USER,
   host: process.env.DB_HOST,
@@ -10,12 +10,12 @@ const pool = new Pool({
   port: process.env.DB_PORT,
 });
 
-// Sunucu kalkarken veritabanı bağlantısını anında test eden senior dokunuşu
+// 
 pool.connect()
-  .then(() => console.log('✅ PostgreSQL Veritabanına başarıyla bağlanıldı.'))
+  .then(() => console.log(' Veritabanına başarıyla bağlanıldı.'))
   .catch(err => {
-      console.error('❌ Veritabanı bağlantı hatası! Bilgilerinizi kontrol edin:', err.message);
-      process.exit(1); // Veritabanı yoksa sunucuyu boşuna çalıştırma, durdur.
+      console.error('❌ Veritabanı bağlantı hatası!', err.message);
+      process.exit(1); 
   });
 
 module.exports = pool;

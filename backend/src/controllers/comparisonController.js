@@ -1,12 +1,12 @@
-const pool = require('../config/db.js'); // Veritabanı bağlantı dosyanın yolunu kendi projene göre ayarla
+const pool = require('../config/db.js'); 
 
-// 1. Karşılaştırma için Verileri Toplu Getirme (Bu kısım aynı kalıyor, ANY ile veri çekiyoruz)
+
+// Karşılaştırma için Verileri Toplu Getirme
 const getItemsToCompare = async (req, res) => {
     const { ids, type } = req.query; 
     
     if (!ids || !type) return res.status(400).json({ error: "Eksik parametre." });
 
-    // Gelen ID'leri diziye çevir ve kenarlarındaki boşlukları (trim) temizle
     const idList = (Array.isArray(ids) ? ids : ids.split(',')).map(id => id.trim());
 
     try {
@@ -14,8 +14,6 @@ const getItemsToCompare = async (req, res) => {
         if (type === 'Event') {
             query = "SELECT Event_ID, Title, Price, Capacity, Event_Date FROM Events WHERE Event_ID = ANY($1)";
         } else {
-            // Senior Dokunuşu: Artworks ve Artists tablolarını JOIN ile birleştiriyoruz.
-            // DİKKAT: "art.Name" ve "a.Artist_ID" kısımlarını kendi Artists tablondaki gerçek kolon isimlerine göre düzeltmelisin.
             query = `
                 SELECT 
                     a.Artwork_ID, 
@@ -36,10 +34,9 @@ const getItemsToCompare = async (req, res) => {
     }
 };
 
-// 2. Karşılaştırmayı JSONB Olarak Kaydetme (SENİN TABLONA GÖRE GÜNCELLENDİ)
+// Karşılaştırmayı kaydetme
 const saveComparison = async (req, res) => {
     const userId = req.user.userId;
-    // itemIds yerine artık itemsData (JSON array) alıyoruz
     const { comparisonType, itemsData, title } = req.body; 
 
     if (!comparisonType || !itemsData) {
@@ -47,7 +44,6 @@ const saveComparison = async (req, res) => {
     }
 
     try {
-        // node-postgres kütüphanesi JavaScript objelerini (itemsData) otomatik olarak JSONB'ye çevirir.
         const newSave = await pool.query(
             "INSERT INTO Saved_Comparisons (User_ID, Comparison_Type, Items_Data, Title) VALUES ($1, $2, $3, $4) RETURNING *",
             [userId, comparisonType, JSON.stringify(itemsData), title]
@@ -59,7 +55,7 @@ const saveComparison = async (req, res) => {
     }
 };
 
-// EKSTRA: Kaydedilen Karşılaştırmaları Listeleme (Frontend için şart)
+//Kayıtlı karşılaştırmaları getirme
 const getSavedComparisons = async (req, res) => {
     const userId = req.user.userId;
 
@@ -74,4 +70,7 @@ const getSavedComparisons = async (req, res) => {
     }
 };
 
-module.exports = { getItemsToCompare, saveComparison, getSavedComparisons };
+module.exports = { 
+    getItemsToCompare, 
+    saveComparison, 
+    getSavedComparisons };

@@ -1,4 +1,4 @@
-const jwt = require('jsonwebtoken'); // En tepeye ekle
+const jwt = require('jsonwebtoken'); 
 const bcrypt = require('bcryptjs');
 const userService = require('../services/userService');
 
@@ -40,11 +40,11 @@ const register = async (req, res) => {
     try {
         const { firstName, lastName, email, password, role } = req.body;
         console.log(req.body) ; 
-        // 1. Şifreyi güvenli hale getir
+        
+        // Şifreyi hashle
         const salt = await bcrypt.genSalt(10);
         const passwordHash = await bcrypt.hash(password, salt);
 
-        // 2. Veritabanına kaydet
         const newUser = await userService.createUser(firstName, lastName, email, passwordHash, role);
 
         res.status(201).json({ message: "Kayıt başarılı!", user: newUser });
@@ -55,4 +55,6 @@ const register = async (req, res) => {
 
 
 
-module.exports = { register , login};
+module.exports = { 
+    register , 
+    login};

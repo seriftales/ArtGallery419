@@ -3,7 +3,7 @@ const router = express.Router();
 const { verifyToken } = require('../middlewares/authMiddleware');
 const { addReview, getReviews,getAverageRating,voteReview ,replyToReview} = require('../controllers/reviewController');
 
-// Sadece giriş yapanlar yorum ekleyebilir
+//ROUTELAR
 router.post('/', verifyToken, addReview);
 router.get('/:targetId', getReviews);
 router.get('/:targetId/stats', getAverageRating); // Ortalama puan ve yıldız dağılımı

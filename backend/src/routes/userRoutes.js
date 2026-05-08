@@ -3,14 +3,16 @@ const router = express.Router();
 const {verifyToken} = require('../middlewares/authMiddleware');
 const { updateProfile, changePassword } = require('../controllers/userController');
 
-// Bu rota korunuyor! verifyToken'dan geçemeyen buraya giremez.
+
+//ROUTELAR
+
+//Validasyon
 router.get('/profile', verifyToken, (req, res) => {
     res.json({ 
         message: "Gizli bölgeye girdin!", 
-        userData: req.user // Token içinden çıkan userId ve role burada
+        userData: req.user 
     });
 });
-
 router.patch('/profile', verifyToken, updateProfile);
 router.put('/change-password', verifyToken, changePassword);
 

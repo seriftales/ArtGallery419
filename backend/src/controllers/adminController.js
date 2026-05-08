@@ -1,9 +1,8 @@
 const pool = require('../config/db');
 
-// 1. Eser İstatistikleri
+//  Eser İstatistikleri
 const getArtworkStats = async (req, res) => {
     try {
-        // Senior Dokunuşu: LEFT JOIN kullanıyoruz ki hiç yorum almamış eserler de (0 olarak) listelensin.
         const query = `
             SELECT 
                 a.Artwork_ID, 
@@ -23,7 +22,7 @@ const getArtworkStats = async (req, res) => {
     }
 };
 
-// 2. Etkinlik İstatistikleri (Doluluk Oranı Hesaplama)
+//  Etkinlik İstatistikleri 
 const getEventStats = async (req, res) => {
     try {
         const query = `
@@ -48,7 +47,7 @@ const getEventStats = async (req, res) => {
     }
 };
 
-// 3. Genel Özet Dashboard (Yönetici İçin)
+// Admin Dashboard Özeti
 const getDashboardSummary = async (req, res) => {
     try {
         // Promise.all ile veritabanına aynı anda (Paralel) 3 farklı sorgu fırlatıyoruz.
@@ -72,12 +71,11 @@ const getDashboardSummary = async (req, res) => {
     }
 };
 
-// Rezervasyon Durumunu Güncelleme (Onaylama veya İptal Etme)
+// Rezervasyon Durumunu Güncelleme Onaylama ve İptal Etme
 const updateReservationStatus = async (req, res) => {
     const { reservationId } = req.params;
     const { status } = req.body; // 'Confirmed' veya 'Cancelled' gönderilecek
 
-    // Sadece belirli status değerlerine izin veriyoruz (Gümrük kontrolü)
     const allowedStatuses = ['Confirmed', 'Cancelled', 'Pending'];
     if (!allowedStatuses.includes(status)) {
         return res.status(400).json({ error: "Geçersiz durum bilgisi." });
@@ -104,4 +102,8 @@ const updateReservationStatus = async (req, res) => {
     }
 };
 
-module.exports = { getArtworkStats, getEventStats, getDashboardSummary, updateReservationStatus };
+module.exports = { 
+    getArtworkStats, 
+    getEventStats, 
+    getDashboardSummary, 
+    updateReservationStatus };

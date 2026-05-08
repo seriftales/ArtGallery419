@@ -4,7 +4,7 @@ const { getAllArtworks,deleteArtwork ,addArtwork,incrementLike,getCampaignArtwor
 const { verifyToken, isAdmin } = require('../middlewares/authMiddleware');
 const upload = require('../middlewares/uploadMiddleware');
 
-// GET /api/artworks
+//ROUTELAR
 router.get('/', getAllArtworks);
 router.delete('/:id', verifyToken, isAdmin, deleteArtwork);
 router.post('/', verifyToken, isAdmin, addArtwork);

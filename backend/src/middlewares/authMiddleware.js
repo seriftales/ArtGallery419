@@ -1,40 +1,37 @@
 const jwt = require('jsonwebtoken');
 
+// Token doğrulama middleware'i
 const verifyToken = (req, res, next) => {
-    // 1. İstek başlığından (Header) token'ı al
     const authHeader = req.headers['authorization'];
-    const token = authHeader && authHeader.split(' ')[1]; // "Bearer TOKEN" formatını ayıklar
+    const token = authHeader && authHeader.split(' ')[1]; 
 
     if (!token) {
         return res.status(403).json({ error: "Token gerekli, giriş yapmalısın!" });
     }
 
     try {
-        // 2. Token'ı bizim gizli anahtarımızla doğrula
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
         
-        // 3. Token içindeki kullanıcı bilgilerini isteğe (req) ekle
-        // Böylece sonraki fonksiyonlarda kimin istek attığını bileceğiz.
         req.user = decoded;
         
-        next(); // Her şey yolunda, bir sonraki fonksiyona geçebilirsin
+        next(); 
     } catch (err) {
         return res.status(401).json({ error: "Geçersiz veya süresi dolmuş token!" });
     }
 };
 
+// Admin yetkisi kontrolü middleware'i
 const isAdmin = (req, res, next) => {
-    // ÖNEMLİ: Bu middleware her zaman 'verifyToken'dan SONRA çalışmalıdır.
-    // Bu yüzden req.user objesinin dolu olduğundan eminiz.
     
     console.log("isAdmin middleware çalıştı. Kullanıcı rolü:", req.user.role); // Debug için ekledim
 
     if (req.user && req.user.role === 'Admin') {
-        next(); // Kullanıcı Admin ise bir sonraki fonksiyona (Controller) geç
+        next(); 
     } else {
-        // 403 Forbidden: "Kim olduğunu biliyorum ama bu odaya girmeye yetkin yok."
         return res.status(403).json({ error: "Erişim reddedildi. Bu işlem için Admin yetkisi gereklidir." });
     }
 };
 
-module.exports = { verifyToken, isAdmin };
+module.exports = { 
+    verifyToken, 
+    isAdmin };

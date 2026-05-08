@@ -1,11 +1,11 @@
-const pool = require('../config/db.js'); // Veritabanı bağlantı dosyanın yolunu kendi projene göre ayarla
+const pool = require('../config/db.js'); 
 
+//Yorum Ekleme
 const addReview = async (req, res) => {
     const userId = req.user.userId;
     const { targetId, targetType, rating, commentText } = req.body;
 
     try {
-        // 1. GÜVENLİK: Mükerrer yorum kontrolü (Daha önce yapmıştık)
         const existingReview = await pool.query(
             "SELECT * FROM Reviews WHERE User_ID = $1 AND Target_ID = $2 AND Target_Type = $3",
             [userId, targetId, targetType]
@@ -14,9 +14,7 @@ const addReview = async (req, res) => {
             return res.status(400).json({ error: "Bu içeriğe zaten yorum yaptınız." });
         }
 
-        // 2. GÜVENLİK: Doğrulama Sistemi (Verification Logic)
         if (targetType === 'Event') {
-            // Etkinlik katılım kontrolü
             const attendanceCheck = await pool.query(
                 "SELECT * FROM Reservations WHERE User_ID = $1 AND Event_ID = $2",
                 [userId, targetId]
@@ -25,8 +23,6 @@ const addReview = async (req, res) => {
                 return res.status(403).json({ error: "Sadece katıldığınız etkinliklere yorum yapabilirsiniz." });
             }
 }       else if (targetType === 'Artwork') {
-            // Senior Dokunuşu: Orders ve Order_Items tablolarını JOIN ile birleştirerek kontrol ediyoruz.
-            // Sadece 'Completed' (Tamamlanmış) statüsündeki siparişleri geçerli sayıyoruz.
             const purchaseCheck = await pool.query(
                 `SELECT oi.Artwork_ID 
                  FROM Order_Items oi
@@ -44,7 +40,6 @@ const addReview = async (req, res) => {
             }
         }
 
-        // 3. KAYIT: Eğer tüm kontrollerden geçtiyse yorumu ekle
         const newReview = await pool.query(
             "INSERT INTO Reviews (User_ID, Target_ID, Target_Type, Rating, Comment_Text) VALUES ($1, $2, $3, $4, $5) RETURNING *",
             [userId, targetId, targetType, rating, commentText]
@@ -58,14 +53,13 @@ const addReview = async (req, res) => {
     }
 };
 
-// 2. Yorumları Görüntüleme (Public - Herkes Görebilir)
-// 2. Yorumları Görüntüleme (Public - Herkes Görebilir)
+
+// Yorumları Getirme
 const getReviews = async (req, res) => {
     const { targetId } = req.params;
-    // Eğer önceki aşamadaki sortBy özelliğini de korumak istersen buraya ekleyebilirsin
     const { sortBy } = req.query; 
 
-    let orderByClause = "ORDER BY r.Created_At DESC"; // Varsayılan
+    let orderByClause = "ORDER BY r.Created_At DESC"; 
 
     if (sortBy === 'highest_rating') {
         orderByClause = "ORDER BY r.Rating DESC, r.Created_At DESC";
@@ -74,7 +68,6 @@ const getReviews = async (req, res) => {
     }
 
     try {
-        // Senin query'ni bozmadan Reply_Text ve Replied_At kolonlarını ekledik
         const query = `
             SELECT 
                 r.Review_ID, 
@@ -101,13 +94,11 @@ const getReviews = async (req, res) => {
     }
 };
 
-// 2. Faydalı Bulma Oyu Verme
+// Yorumlara Oy Verme
 const voteReview = async (req, res) => {
     const { reviewId } = req.params;
 
     try {
-        // Senior Uyarısı: Burada normalde 'User_ID' ile kontrol yapıp 
-        // mükerrer oyu engellememiz gerekir. Şimdilik sadece sayacı artırıyoruz.
         const result = await pool.query(
             "UPDATE Reviews SET Helpful_Votes = Helpful_Votes + 1 WHERE Review_ID = $1 RETURNING Helpful_Votes",
             [reviewId]
@@ -121,7 +112,7 @@ const voteReview = async (req, res) => {
     }
 };
 
-// 3. Ortalama Puan Bilgilerini Getirme
+// Ortalama Puan ve Yıldız Dağılımı
 const getAverageRating = async (req, res) => {
     const { targetId } = req.params;
 
@@ -154,9 +145,8 @@ const getAverageRating = async (req, res) => {
 const replyToReview = async (req, res) => {
     const { reviewId } = req.params;
     const { replyText } = req.body;
-    const userRole = req.user.role; // Middleware'den gelen rol bilgisi
+    const userRole = req.user.role;
 
-    // --- SENIOR GÜVENLİK DUVARI ---
     if (userRole !== 'Admin' && userRole !== 'Manager') {
         return res.status(403).json({ error: "Bu işlem için yetkiniz yok. Sadece yöneticiler yanıt verebilir." });
     }
@@ -182,4 +172,9 @@ const replyToReview = async (req, res) => {
     }
 };
 
-module.exports = { addReview, getReviews, voteReview, getAverageRating ,replyToReview};
+module.exports = { 
+    addReview, 
+    getReviews, 
+    voteReview, 
+    getAverageRating ,
+    replyToReview};
