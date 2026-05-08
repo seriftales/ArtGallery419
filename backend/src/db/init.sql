@@ -117,7 +117,7 @@ CREATE TABLE Support_Tickets (
     Ticket_ID UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     User_ID UUID REFERENCES Users(User_ID) ON DELETE CASCADE,
     Subject VARCHAR(150) NOT NULL,
-    Message TEXT NOT NULL,
+    Message TEXT NOT NULL, --ER Den cıkar 
     Status VARCHAR(20) CHECK (Status IN ('Open', 'Resolved', 'Closed')) DEFAULT 'Open',
     Created_At TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -140,4 +140,13 @@ CREATE TABLE Coupons (
     Valid_Until TIMESTAMP NOT NULL, -- Son kullanma tarihi
     Target_User_ID UUID REFERENCES Users(User_ID) ON DELETE CASCADE, -- SENIOR DOKUNUŞU: Belirli kullanıcıya özelse burası dolar, herkese açıksa NULL kalır!
     Is_Active BOOLEAN DEFAULT TRUE
+);
+
+-- 13 (Detay Tablosu - Karşılıklı mesajlaşmayı tutar) ER diyagramına eklemek gerek
+CREATE TABLE Ticket_Messages (
+    Message_ID UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    Ticket_ID UUID REFERENCES Support_Tickets(Ticket_ID) ON DELETE CASCADE,
+    Sender_ID UUID REFERENCES Users(User_ID) ON DELETE CASCADE, -- Mesajı kim attı? (Müşteri mi, Admin mi?)
+    Message TEXT NOT NULL,
+    Created_At TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );

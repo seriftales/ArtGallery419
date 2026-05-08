@@ -50,6 +50,8 @@ app.use('/api/admin', adminRoutes);
 const couponRoutes = require('./src/routes/couponRoutes');
 app.use('/api/coupons', couponRoutes);
 
+const ticketRoutes = require('./src/routes/ticketRoutes');
+app.use('/api/tickets', ticketRoutes);
 
 
 // --- MIDDLEWARES (Ara Katmanlar) ---
