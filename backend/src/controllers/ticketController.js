@@ -101,4 +101,36 @@ const getTicketDetails = async (req, res) => {
     }
 };
 
-module.exports = { createTicket, getMyTickets, replyToTicket, getTicketDetails };
+const updateTicketStatus = async (req, res) => {
+    const { ticketId } = req.params;
+    const { status } = req.body;
+    const userId = req.user.userId; // SENIOR DOKUNUŞU: İstek atan kişinin kimliği
+
+    const allowedStatuses = ['Open', 'Resolved', 'Closed'];
+    if (!allowedStatuses.includes(status)) {
+        return res.status(400).json({ error: "Geçersiz statü. Sadece Open, Resolved veya Closed kullanılabilir." });
+    }
+
+    try {
+        // ZIRH EKLENDİ: Sadece User_ID eşleşirse güncelleme yapılır!
+        const result = await pool.query(
+            "UPDATE Support_Tickets SET Status = $1 WHERE Ticket_ID = $2 AND User_ID = $3 RETURNING *",
+            [status, ticketId, userId]
+        );
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: "Bilet bulunamadı veya bu işlemi yapmaya yetkiniz yok." });
+        }
+
+        res.status(200).json({ 
+            success: true, 
+            message: `Bilet durumu ${status} olarak güncellendi.`, 
+            data: result.rows[0] 
+        });
+    } catch (error) {
+        console.error("Durum güncelleme hatası:", error.message);
+        res.status(500).json({ error: "Bilet durumu güncellenemedi." });
+    }
+};
+
+module.exports = { createTicket, getMyTickets, replyToTicket, getTicketDetails , updateTicketStatus};
