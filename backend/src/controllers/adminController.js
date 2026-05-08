@@ -72,4 +72,36 @@ const getDashboardSummary = async (req, res) => {
     }
 };
 
-module.exports = { getArtworkStats, getEventStats, getDashboardSummary };
+// Rezervasyon Durumunu Güncelleme (Onaylama veya İptal Etme)
+const updateReservationStatus = async (req, res) => {
+    const { reservationId } = req.params;
+    const { status } = req.body; // 'Confirmed' veya 'Cancelled' gönderilecek
+
+    // Sadece belirli status değerlerine izin veriyoruz (Gümrük kontrolü)
+    const allowedStatuses = ['Confirmed', 'Cancelled', 'Pending'];
+    if (!allowedStatuses.includes(status)) {
+        return res.status(400).json({ error: "Geçersiz durum bilgisi." });
+    }
+
+    try {
+        const result = await pool.query(
+            "UPDATE Reservations SET Status = $1 WHERE Reservation_ID = $2 RETURNING *",
+            [status, reservationId]
+        );
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: "Rezervasyon bulunamadı." });
+        }
+
+        res.status(200).json({ 
+            success: true, 
+            message: `Rezervasyon durumu ${status} olarak güncellendi.`, 
+            data: result.rows[0] 
+        });
+    } catch (error) {
+        console.error("Rezervasyon güncelleme hatası:", error.message);
+        res.status(500).json({ error: "Güncelleme yapılamadı." });
+    }
+};
+
+module.exports = { getArtworkStats, getEventStats, getDashboardSummary, updateReservationStatus };

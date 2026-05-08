@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { getArtworkStats, getEventStats, getDashboardSummary } = require('../controllers/adminController');
+const { getArtworkStats, getEventStats, getDashboardSummary,updateReservationStatus } = require('../controllers/adminController');
 const { verifyToken } = require('../middlewares/authMiddleware'); // Kendi dosya yoluna göre güncelle
 
 // Senior Güvenlik Duvarı (Inline Middleware)
@@ -16,5 +16,7 @@ const isAdmin = (req, res, next) => {
 router.get('/stats/artworks', verifyToken, isAdmin, getArtworkStats);
 router.get('/stats/events', verifyToken, isAdmin, getEventStats);
 router.get('/summary', verifyToken, isAdmin, getDashboardSummary);
+// Rezervasyon Onaylama Rotası (PATCH kullanılır çünkü sadece statüyü değiştiriyoruz)
+router.patch('/reservations/:reservationId/status', verifyToken, isAdmin, updateReservationStatus);
 
 module.exports = router;
