@@ -1,16 +1,11 @@
 const pool = require('../config/db.js'); // Veritabanı bağlantı dosyanın yolunu kendi projene göre ayarla
 
-// 1. Yorum Ekleme
 const addReview = async (req, res) => {
     const userId = req.user.userId;
     const { targetId, targetType, rating, commentText } = req.body;
 
-    if (!targetId || !targetType || !rating) {
-        return res.status(400).json({ error: "Eksik parametre." });
-    }
-
     try {
-        // --- 1. GÜVENLİK DUVARI: Çoklu Yorum Engeli ---
+        // 1. GÜVENLİK: Mükerrer yorum kontrolü (Daha önce yapmıştık)
         const existingReview = await pool.query(
             "SELECT * FROM Reviews WHERE User_ID = $1 AND Target_ID = $2 AND Target_Type = $3",
             [userId, targetId, targetType]
@@ -19,38 +14,46 @@ const addReview = async (req, res) => {
             return res.status(400).json({ error: "Bu içeriğe zaten yorum yaptınız." });
         }
 
-        // --- 2. GÜVENLİK DUVARI: Polimorfik Veri Doğrulama ve Katılım Kontrolü ---
+        // 2. GÜVENLİK: Doğrulama Sistemi (Verification Logic)
         if (targetType === 'Event') {
-            // Etkinlik var mı?
-            const eventCheck = await pool.query("SELECT * FROM Events WHERE Event_ID = $1", [targetId]);
-            if (eventCheck.rows.length === 0) return res.status(404).json({ error: "Etkinlik bulunamadı." });
-
-            // Kullanıcı bu etkinliğe katılmış mı? (Rezervasyonu var mı?)
+            // Etkinlik katılım kontrolü
             const attendanceCheck = await pool.query(
                 "SELECT * FROM Reservations WHERE User_ID = $1 AND Event_ID = $2",
                 [userId, targetId]
             );
             if (attendanceCheck.rows.length === 0) {
-                return res.status(403).json({ error: "Sadece katıldığınız (rezervasyon yaptığınız) etkinliklere yorum yapabilirsiniz." });
+                return res.status(403).json({ error: "Sadece katıldığınız etkinliklere yorum yapabilirsiniz." });
             }
-        } else if (targetType === 'Artwork') {
-            // Eser var mı?
-            const artworkCheck = await pool.query("SELECT * FROM Artworks WHERE Artwork_ID = $1", [targetId]);
-            if (artworkCheck.rows.length === 0) return res.status(404).json({ error: "Eser bulunamadı." });
-        } else {
-            return res.status(400).json({ error: "Geçersiz Target_Type." });
+}       else if (targetType === 'Artwork') {
+            // Senior Dokunuşu: Orders ve Order_Items tablolarını JOIN ile birleştirerek kontrol ediyoruz.
+            // Sadece 'Completed' (Tamamlanmış) statüsündeki siparişleri geçerli sayıyoruz.
+            const purchaseCheck = await pool.query(
+                `SELECT oi.Artwork_ID 
+                 FROM Order_Items oi
+                 INNER JOIN Orders o ON oi.Order_ID = o.Order_ID
+                 WHERE o.User_ID = $1 
+                 AND oi.Artwork_ID = $2 
+                 AND o.Status = 'Completed'`,
+                [userId, targetId]
+            );
+
+            if (purchaseCheck.rows.length === 0) {
+                return res.status(403).json({ 
+                    error: "Sadece satın alma işlemi tamamlanmış eserler için doğrulanmış yorum yapabilirsiniz." 
+                });
+            }
         }
 
-        // --- 3. KAYIT İŞLEMİ ---
+        // 3. KAYIT: Eğer tüm kontrollerden geçtiyse yorumu ekle
         const newReview = await pool.query(
             "INSERT INTO Reviews (User_ID, Target_ID, Target_Type, Rating, Comment_Text) VALUES ($1, $2, $3, $4, $5) RETURNING *",
             [userId, targetId, targetType, rating, commentText]
         );
 
-        res.status(201).json({ success: true, message: "Yorum eklendi.", data: newReview.rows[0] });
+        res.status(201).json({ success: true, message: "Doğrulanmış yorumunuz başarıyla eklendi.", data: newReview.rows[0] });
 
-    } catch (error) {
-        console.error("Yorum ekleme hatası:", error.message);
+   } catch (error) {
+        console.error("🔥 VERİTABANI HATASI DETAYI:", error.message);
         res.status(500).json({ error: "Sunucu hatası." });
     }
 };
