@@ -39,6 +39,7 @@ CREATE TABLE Artworks (
     Category VARCHAR(50),
     Image_URL VARCHAR(255),
     Stock_Status VARCHAR(20) DEFAULT 'Available',
+    View_Count INT DEFAULT 0, --ER ye ekle: Eserin kaç kez görüntülendiğini takip etmek için
     Created_At TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -52,6 +53,7 @@ CREATE TABLE Events (
     Capacity INTEGER NOT NULL CHECK (Capacity >= 0), -- Kontenjan eksiye düşemez!
     Price NUMERIC(10,2) NOT NULL CHECK (Price >= 0),
     Image_URL VARCHAR(255), -- ER ye ekle 
+    View_Count INT DEFAULT 0, --ER ye ekle: Eserin kaç kez görüntülendiğini takip etmek için
     Created_At TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
