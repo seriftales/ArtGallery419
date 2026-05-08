@@ -6,9 +6,11 @@ const { verifyToken, isAdmin } = require('../middlewares/authMiddleware');
 const upload = require('../middlewares/uploadMiddleware'); // Senin daha önce yazdığın Multer kalkanı
 
 // Controller fonksiyonları
-const { addEvent, getAllEvents, getEventById } = require('../controllers/eventController');
+const { addEvent, getAllEvents, getEventById,getCampaignEvents } = require('../controllers/eventController');
 
 // GET rotaları: Herkese açık (Kalkan yok)
+router.get('/campaigns', getCampaignEvents);
+
 router.get('/', getAllEvents);
 router.get('/:id', getEventById);
 

@@ -133,9 +133,25 @@ const incrementLike = async (req, res) => {
     }
 };
 
+// Kampanyalı Eserleri Görüntüleme
+const getCampaignArtworks = async (req, res) => {
+    try {
+        // Sadece Is_Campaign değeri TRUE olanları getiriyoruz
+        const result = await pool.query(
+            "SELECT * FROM Artworks WHERE Is_Campaign = TRUE"
+        );
+        res.status(200).json({ success: true, data: result.rows });
+    } catch (error) {
+        res.status(500).json({ error: "Kampanyalı eserler listelenemedi." });
+    }
+};
+
+// Modül exportlarına getCampaignArtworks'ü eklemeyi unutma!
+
 module.exports = {
     getAllArtworks,
     deleteArtwork,
     addArtwork,
-    incrementLike
+    incrementLike,
+    getCampaignArtworks
 };

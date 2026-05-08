@@ -68,4 +68,29 @@ const getEventById = async (req, res) => {
     }
 };
 
-module.exports = { addEvent, getAllEvents, getEventById };
+const getCampaignEvents = async (req, res) => {
+    console.log("\n--- 🕵️‍♂️ DEBUG BAŞLADI: getCampaignEvents ---");
+    try {
+        console.log("Adım 1: İstek API'ye ulaştı.");
+        
+        // Hangi sorgunun çalıştığını net görelim
+        const query = 'SELECT * FROM Events WHERE "is_campaign" = true';
+        console.log("Adım 2: SQL Sorgusu çalıştırılıyor ->", query);
+        
+        const result = await pool.query(query);
+        
+        console.log("Adım 3: Veritabanı cevap verdi. Bulunan satır sayısı:", result.rowCount);
+        console.log("--- 🕵️‍♂️ DEBUG BİTTİ (BAŞARILI) ---\n");
+        
+        res.status(200).json({ success: true, data: result.rows });
+    } catch (error) {
+        console.error("\n🚨 Adım 4: SİSTEM PATLADI! HATA YAKALANDI 🚨");
+        console.error("Hata Mesajı (Message):", error.message);
+        console.error("Hata Kodu (Code):", error.code); // PostgreSQL hata kodunu verir
+        console.error("--- 🕵️‍♂️ DEBUG BİTTİ (HATALI) ---\n");
+        
+        res.status(500).json({ error: "Kampanyalı etkinlikler listelenemedi." });
+    }
+};
+
+module.exports = { addEvent, getAllEvents, getEventById, getCampaignEvents };

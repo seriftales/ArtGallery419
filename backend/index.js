@@ -47,6 +47,9 @@ app.use('/api/reviews', reviewRoutes);
 const adminRoutes = require('./src/routes/adminRoutes');
 app.use('/api/admin', adminRoutes);
 
+const couponRoutes = require('./src/routes/couponRoutes');
+app.use('/api/coupons', couponRoutes);
+
 
 
 // --- MIDDLEWARES (Ara Katmanlar) ---

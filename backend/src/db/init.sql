@@ -41,6 +41,8 @@ CREATE TABLE Artworks (
     Stock_Status VARCHAR(20) DEFAULT 'Available',
     View_Count INT DEFAULT 0, --ER ye ekle: Eserin kaç kez görüntülendiğini takip etmek için
     Like_Count INT DEFAULT 0; --ER ye ekle: Eserin kaç kez beğenildiğini takip etmek için
+    Is_Campaign BOOLEAN DEFAULT FALSE, --ER ye ekle: Kampanyalı eserleri işaretlemek için
+    Campaign_Discount_Percent INT DEFAULT 0;--ER ye ekle: Kampanya varsa indirim yüzdesi
     Created_At TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -55,6 +57,7 @@ CREATE TABLE Events (
     Price NUMERIC(10,2) NOT NULL CHECK (Price >= 0),
     Image_URL VARCHAR(255), -- ER ye ekle 
     View_Count INT DEFAULT 0, --ER ye ekle: Eserin kaç kez görüntülendiğini takip etmek için
+    Is_Campaign BOOLEAN DEFAULT FALSE, --ER ye ekle: Kampanyalı etkinlikleri işaretlemek için
     Created_At TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -127,4 +130,14 @@ CREATE TABLE Saved_Comparisons (
     Items_Data JSONB NOT NULL, -- Karşılaştırılan öğelerin ID'leri ve özet verileri burada dizi olarak tutulacak
     Title VARCHAR(100), -- ER ye ekle: Kullanıcı karşılaştırmaya bir başlık verebilir
     Created_At TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 12. KUPONLAR TABLOSU (Madde 1 ve 3'ü çözer) ER ye ekle
+CREATE TABLE Coupons (
+    Coupon_ID UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    Code VARCHAR(20) UNIQUE NOT NULL, -- Örn: 'KAAN20', 'YAZINDIRIMI'
+    Discount_Percent INT NOT NULL CHECK (Discount_Percent > 0 AND Discount_Percent <= 100),
+    Valid_Until TIMESTAMP NOT NULL, -- Son kullanma tarihi
+    Target_User_ID UUID REFERENCES Users(User_ID) ON DELETE CASCADE, -- SENIOR DOKUNUŞU: Belirli kullanıcıya özelse burası dolar, herkese açıksa NULL kalır!
+    Is_Active BOOLEAN DEFAULT TRUE
 );
