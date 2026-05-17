@@ -1,0 +1,19 @@
+# Bağımlılıklar
+node_modules/
+
+# Ortam değişkenleri (HASSAS BİLGİ!)
+.env
+.env.local
+.env.*.local
+
+# Loglar
+*.log
+npm-debug.log*
+
+# Editör
+.vscode/
+.idea/
+.DS_Store
+
+# Upload edilen dosyalar
+uploads/
