@@ -1,37 +1,22 @@
 import { useState, useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router";
-import { Calendar, Clock, Users, MapPin, Star, ArrowLeft, User, Phone, Mail, Tag, Check } from "lucide-react";
+import { Calendar, Clock, Users, ArrowLeft, User, Phone, Mail, Tag, Check } from "lucide-react";
 import { toast } from "sonner";
 import { ImageWithFallback } from "./figma/ImageWithFallback";
-
-const WORKSHOP_DATA = {
-  id: 1,
-  image: "https://images.unsplash.com/photo-1541753866388-0b3c701627d3?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=1200",
-  title: "Yağlı Boya Teknikleri",
-  instructor: "Ayşe Demir",
-  description: "Klasik ve modern yağlı boya tekniklerini öğrenin",
-  fullDescription: "Bu atölyede yağlı boya sanatının temellerinden ileri tekniklerine kadar geniş bir yelpazede bilgi edineceksiniz. Renk karıştırma, ışık-gölge çalışmaları, perspektif ve kompozisyon gibi konularda uygulamalı eğitim alacaksınız.",
-  date: "2026-05-20",
-  time: "14:00",
-  duration: "3 saat",
-  price: 450,
-  spots: 8,
-  maxSpots: 12,
-  level: "Başlangıç",
-  category: "Resim",
-  rating: 4.9,
-  reviews: 45,
-  location: "Kadıköy Atölyesi",
-  address: "Kadıköy Mah. Sanat Sok. No:15 Kadıköy/İstanbul",
-  materials: ["Yağlı boya seti", "Fırçalar", "Tuval", "Palet"]
-};
+import { api, ApiError } from "../../lib/api";
+import { auth } from "../../lib/auth";
+import type { ApiItem, ArtEvent } from "../../lib/types";
+import { parsePrice, formatPrice, resolveImage } from "../../lib/formatters";
 
 export default function WorkshopDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const [workshop] = useState(WORKSHOP_DATA);
+
+  const [workshop, setWorkshop] = useState<ArtEvent | null>(null);
+  const [loading, setLoading] = useState(true);
   const [participants, setParticipants] = useState(1);
   const [showReservationForm, setShowReservationForm] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -45,64 +30,129 @@ export default function WorkshopDetail() {
   const [userRole, setUserRole] = useState<string | null>(null);
 
   useEffect(() => {
-    const user = localStorage.getItem("user");
-    setIsLoggedIn(!!user);
+    if (!id) return;
+    let cancelled = false;
 
+    const loggedIn = auth.isLoggedIn();
+    const user = auth.getUser();
+    setIsLoggedIn(loggedIn);
+    setUserRole(user?.role ?? null);
     if (user) {
-      const userData = JSON.parse(user);
-      setUserRole(userData.role);
+      setFormData((prev) => ({ ...prev, name: user.name || "", email: user.email || "" }));
     }
-  }, []);
 
-  const CAMPAIGN_CODES: Record<string, { discount: number; description: string }> = {
-    "SANAT20": { discount: 20, description: "%20 İndirim" },
-    "ATOLYE15": { discount: 15, description: "%15 İndirim" },
-    "YAZ2026": { discount: 25, description: "%25 Yaz İndirimi" }
-  };
+    const load = async () => {
+      try {
+        // Backend'de tek event endpoint'i var: GET /api/events/:id
+        const res = await api.get<ApiItem<ArtEvent>>(`/events/${id}`, { skipAuth: true });
+        if (cancelled) return;
+        setWorkshop(res.data);
+      } catch (err) {
+        console.error("Atölye yüklenemedi:", err);
+        toast.error("Atölye yüklenemedi");
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    };
 
-  const applyCampaignCode = () => {
-    const code = campaignCode.toUpperCase();
-    if (CAMPAIGN_CODES[code]) {
-      setDiscount(CAMPAIGN_CODES[code].discount);
-      setCampaignError("");
-    } else {
+    load();
+    return () => {
+      cancelled = true;
+    };
+  }, [id]);
+
+  const applyCampaignCode = async () => {
+    if (!campaignCode.trim()) {
+      setCampaignError("Lütfen bir kod girin");
+      return;
+    }
+    if (!isLoggedIn) {
+      toast.error("Kampanya kodu kullanmak için giriş yapmalısınız!");
+      return;
+    }
+
+    try {
+      const result = await api.post<{ discount?: number; discount_percent?: number; valid?: boolean }>(
+        "/coupons/validate",
+        { code: campaignCode.toUpperCase() }
+      );
+      const pct = result.discount_percent ?? result.discount ?? 0;
+      if (pct > 0) {
+        setDiscount(pct);
+        setCampaignError("");
+        toast.success(`%${pct} indirim uygulandı!`);
+      } else {
+        setDiscount(0);
+        setCampaignError("Geçersiz kampanya kodu!");
+        toast.error("Geçersiz kampanya kodu!");
+      }
+    } catch (err) {
       setDiscount(0);
-      setCampaignError("Geçersiz kampanya kodu!");
+      const message = err instanceof ApiError ? err.message : "Kupon doğrulanamadı";
+      setCampaignError(message);
     }
   };
 
   const calculateTotal = () => {
-    const subtotal = workshop.price * participants;
+    if (!workshop) return 0;
+    const subtotal = parsePrice(workshop.price) * participants;
     const discountAmount = (subtotal * discount) / 100;
     return subtotal - discountAmount;
   };
 
-  const handleReservation = (e: React.FormEvent) => {
+  const handleReservation = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!workshop) return;
 
-    const totalPrice = calculateTotal();
-
-    const reservation = {
-      id: Date.now(),
-      workshopId: workshop.id,
-      workshopTitle: workshop.title,
-      workshopDate: workshop.date,
-      workshopTime: workshop.time,
-      participants,
-      totalPrice,
-      campaignCode: discount > 0 ? campaignCode : null,
-      discount,
-      ...formData,
-      status: "confirmed",
-      createdAt: new Date().toISOString()
-    };
-
-    const existingReservations = JSON.parse(localStorage.getItem("reservations") || "[]");
-    localStorage.setItem("reservations", JSON.stringify([...existingReservations, reservation]));
-
-    toast.success(`Rezervasyonunuz başarıyla oluşturuldu! Toplam: ₺${totalPrice.toLocaleString()}`);
-    navigate("/my-reservations");
+    setSubmitting(true);
+    try {
+      await api.post("/reservations", {
+        eventId: workshop.event_id,
+        participantCount: participants,
+      });
+      toast.success("Rezervasyonunuz başarıyla oluşturuldu!");
+      navigate("/my-reservations");
+    } catch (err) {
+      const message = err instanceof ApiError ? err.message : "Rezervasyon başarısız";
+      toast.error(message);
+    } finally {
+      setSubmitting(false);
+    }
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen py-32 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto animate-pulse grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div className="lg:col-span-2 space-y-6">
+            <div className="h-96 bg-muted rounded-3xl" />
+            <div className="h-10 bg-muted rounded w-1/2" />
+            <div className="h-32 bg-muted rounded" />
+          </div>
+          <div className="h-96 bg-muted rounded-3xl" />
+        </div>
+      </div>
+    );
+  }
+
+  if (!workshop) {
+    return (
+      <div className="min-h-screen py-32 px-4 sm:px-6 lg:px-8 flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-4xl font-light mb-4">Atölye bulunamadı</h1>
+          <Link
+            to="/workshops"
+            className="inline-flex items-center space-x-2 px-6 py-3 bg-primary text-primary-foreground rounded-2xl hover:shadow-xl transition-all"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            <span>Atölyelere Dön</span>
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  const isFull = workshop.capacity === 0;
 
   return (
     <div className="min-h-screen py-32 px-4 sm:px-6 lg:px-8">
@@ -120,68 +170,27 @@ export default function WorkshopDetail() {
           <div className="lg:col-span-2 space-y-8">
             <div>
               <ImageWithFallback
-                src={workshop.image}
+                src={resolveImage(workshop.image_url, "https://images.unsplash.com/photo-1541753866388-0b3c701627d3?w=1200")}
                 alt={workshop.title}
                 className="w-full h-96 object-cover rounded-3xl mb-6 shadow-2xl"
               />
 
-              <div className="mb-4 flex flex-wrap gap-2">
-                <span className="px-4 py-2 bg-primary/10 text-primary rounded-full text-sm font-medium">
-                  {workshop.category}
-                </span>
-                <span className="px-4 py-2 bg-secondary text-secondary-foreground rounded-full text-sm font-medium">
-                  {workshop.level}
-                </span>
-              </div>
-
               <h1 className="text-5xl md:text-6xl mb-4 font-light">{workshop.title}</h1>
-              <p className="text-2xl text-muted-foreground mb-8 font-light">Eğitmen: {workshop.instructor}</p>
+            </div>
 
-              <div className="flex items-center space-x-4 mb-8">
-                <div className="flex items-center space-x-2">
-                  <div className="flex">
-                    {[1, 2, 3, 4, 5].map((star) => (
-                      <Star
-                        key={star}
-                        className={`w-5 h-5 ${
-                          star <= Math.round(workshop.rating)
-                            ? "fill-yellow-400 text-yellow-400"
-                            : "text-gray-300"
-                        }`}
-                      />
-                    ))}
-                  </div>
-                  <span className="text-lg">{workshop.rating.toFixed(1)}</span>
-                </div>
-                <span className="text-muted-foreground">•</span>
-                <span className="text-muted-foreground">{workshop.reviews} değerlendirme</span>
+            {workshop.description && (
+              <div className="p-8 bg-muted/30 rounded-3xl backdrop-blur-sm border border-border/50">
+                <h2 className="text-3xl mb-4 font-light">Atölye Hakkında</h2>
+                <p className="text-muted-foreground leading-relaxed font-light">{workshop.description}</p>
               </div>
-            </div>
-
-            <div className="p-8 bg-muted/30 rounded-3xl backdrop-blur-sm border border-border/50">
-              <h2 className="text-3xl mb-4 font-light">Atölye Hakkında</h2>
-              <p className="text-muted-foreground leading-relaxed font-light mb-4">{workshop.description}</p>
-              <p className="text-muted-foreground leading-relaxed font-light">{workshop.fullDescription}</p>
-            </div>
-
-            <div className="p-8 bg-muted/30 rounded-3xl backdrop-blur-sm border border-border/50">
-              <h2 className="text-3xl mb-4 font-light">Sağlanan Malzemeler</h2>
-              <ul className="space-y-3">
-                {workshop.materials.map((material, index) => (
-                  <li key={index} className="flex items-center space-x-3">
-                    <div className="w-2 h-2 bg-primary rounded-full" />
-                    <span className="font-light">{material}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
+            )}
           </div>
 
           {/* Reservation Sidebar */}
           <div className="lg:col-span-1">
             <div className="sticky top-32 bg-background/80 backdrop-blur-xl border border-border/50 rounded-3xl shadow-2xl p-8">
               <div className="mb-6">
-                <div className="text-4xl mb-2 font-light">₺{workshop.price}</div>
+                <div className="text-4xl mb-2 font-light">{formatPrice(workshop.price)}</div>
                 <p className="text-sm text-muted-foreground font-light">Kişi başı ücret</p>
               </div>
 
@@ -190,37 +199,30 @@ export default function WorkshopDetail() {
                   <Calendar className="w-5 h-5 text-primary" />
                   <div>
                     <p className="text-sm text-muted-foreground font-light">Tarih</p>
-                    <p className="font-medium">{new Date(workshop.date).toLocaleDateString('tr-TR')}</p>
+                    <p className="font-medium">{new Date(workshop.date).toLocaleDateString("tr-TR")}</p>
                   </div>
                 </div>
-                <div className="flex items-center space-x-3">
-                  <Clock className="w-5 h-5 text-primary" />
-                  <div>
-                    <p className="text-sm text-muted-foreground font-light">Saat ve Süre</p>
-                    <p className="font-medium">{workshop.time} - {workshop.duration}</p>
+                {workshop.time && (
+                  <div className="flex items-center space-x-3">
+                    <Clock className="w-5 h-5 text-primary" />
+                    <div>
+                      <p className="text-sm text-muted-foreground font-light">Saat</p>
+                      <p className="font-medium">{workshop.time.slice(0, 5)}</p>
+                    </div>
                   </div>
-                </div>
+                )}
                 <div className="flex items-center space-x-3">
                   <Users className="w-5 h-5 text-primary" />
                   <div>
-                    <p className="text-sm text-muted-foreground font-light">Kontenjan</p>
-                    <p className={`font-medium ${workshop.spots < 5 ? "text-red-600" : ""}`}>
-                      {workshop.spots}/{workshop.maxSpots} kişi
+                    <p className="text-sm text-muted-foreground font-light">Kalan Kontenjan</p>
+                    <p className={`font-medium ${workshop.capacity < 5 ? "text-red-600" : ""}`}>
+                      {workshop.capacity} kişi
                     </p>
-                  </div>
-                </div>
-                <div className="flex items-start space-x-3">
-                  <MapPin className="w-5 h-5 text-primary mt-1" />
-                  <div>
-                    <p className="text-sm text-muted-foreground font-light">Konum</p>
-                    <p className="font-medium">{workshop.location}</p>
-                    <p className="text-sm text-muted-foreground mt-1 font-light">{workshop.address}</p>
                   </div>
                 </div>
               </div>
 
-              {/* Admin: Sadece görüntüleme */}
-              {userRole === 'admin' ? (
+              {userRole === "Admin" ? (
                 <div className="p-4 bg-muted/30 rounded-2xl border border-border/50 text-center">
                   <p className="text-muted-foreground font-light">
                     Bu atölye admin panelinden yönetilebilir
@@ -236,10 +238,10 @@ export default function WorkshopDetail() {
                     }
                     setShowReservationForm(true);
                   }}
-                  disabled={workshop.spots === 0}
-                  className="w-full px-6 py-4 bg-gradient-to-r from-primary to-primary/80 text-primary-foreground rounded-2xl hover:shadow-xl hover:shadow-primary/20 transition-all duration-300 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+                  disabled={isFull}
+                  className="w-full px-6 py-4 bg-gradient-to-r from-primary to-primary/80 text-primary-foreground rounded-2xl hover:shadow-xl hover:shadow-primary/20 transition-all duration-300 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 font-medium"
                 >
-                  {workshop.spots === 0 ? "Kontenjan Dolu" : "Rezervasyon Yap"}
+                  {isFull ? "Kontenjan Dolu" : "Rezervasyon Yap"}
                 </button>
               ) : (
                 <form onSubmit={handleReservation} className="space-y-4">
@@ -251,7 +253,7 @@ export default function WorkshopDetail() {
                       className="w-full px-4 py-3 bg-muted/50 border border-border/50 rounded-2xl focus:outline-none focus:ring-2 focus:ring-primary/50"
                       required
                     >
-                      {Array.from({ length: Math.min(workshop.spots, 5) }, (_, i) => i + 1).map((num) => (
+                      {Array.from({ length: Math.min(workshop.capacity, 5) }, (_, i) => i + 1).map((num) => (
                         <option key={num} value={num}>{num} Kişi</option>
                       ))}
                     </select>
@@ -308,7 +310,7 @@ export default function WorkshopDetail() {
                           type="text"
                           value={campaignCode}
                           onChange={(e) => setCampaignCode(e.target.value.toUpperCase())}
-                          placeholder="SANAT20"
+                          placeholder="Kupon kodu"
                           className="w-full pl-10 pr-4 py-3 bg-muted/50 border border-border/50 rounded-2xl focus:outline-none focus:ring-2 focus:ring-primary/50"
                         />
                       </div>
@@ -335,26 +337,27 @@ export default function WorkshopDetail() {
                     <div className="space-y-2">
                       <div className="flex justify-between items-center text-muted-foreground font-light">
                         <span>Ara Toplam</span>
-                        <span>₺{(workshop.price * participants).toLocaleString()}</span>
+                        <span>₺{(parsePrice(workshop.price) * participants).toLocaleString("tr-TR")}</span>
                       </div>
                       {discount > 0 && (
                         <div className="flex justify-between items-center text-green-600 font-light">
                           <span>İndirim (%{discount})</span>
-                          <span>-₺{((workshop.price * participants * discount) / 100).toLocaleString()}</span>
+                          <span>-₺{((parsePrice(workshop.price) * participants * discount) / 100).toLocaleString("tr-TR")}</span>
                         </div>
                       )}
                       <div className="flex justify-between items-center mb-4 pt-2 border-t border-border/30">
                         <span className="text-muted-foreground font-light">Toplam Tutar</span>
-                        <span className="text-3xl font-light">₺{calculateTotal().toLocaleString()}</span>
+                        <span className="text-3xl font-light">₺{calculateTotal().toLocaleString("tr-TR")}</span>
                       </div>
                     </div>
                   </div>
 
                   <button
                     type="submit"
-                    className="w-full px-6 py-4 bg-gradient-to-r from-primary to-primary/80 text-primary-foreground rounded-2xl hover:shadow-xl hover:shadow-primary/20 transition-all duration-300 hover:scale-105 font-medium"
+                    disabled={submitting}
+                    className="w-full px-6 py-4 bg-gradient-to-r from-primary to-primary/80 text-primary-foreground rounded-2xl hover:shadow-xl hover:shadow-primary/20 transition-all duration-300 hover:scale-105 disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:scale-100 font-medium"
                   >
-                    Rezervasyonu Onayla
+                    {submitting ? "İşleniyor..." : "Rezervasyonu Onayla"}
                   </button>
 
                   <button
