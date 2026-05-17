@@ -4,6 +4,7 @@ import { Calendar, Clock, Users, ArrowLeft, User, Phone, Mail, Tag, Check } from
 import { toast } from "sonner";
 import { ImageWithFallback } from "./figma/ImageWithFallback";
 import { api, ApiError } from "../../lib/api";
+import { validateCoupon } from "../../lib/coupon";
 import { auth } from "../../lib/auth";
 import type { ApiItem, ArtEvent } from "../../lib/types";
 import { parsePrice, formatPrice, resolveImage } from "../../lib/formatters";
@@ -62,34 +63,19 @@ export default function WorkshopDetail() {
   }, [id]);
 
   const applyCampaignCode = async () => {
-    if (!campaignCode.trim()) {
-      setCampaignError("Lütfen bir kod girin");
-      return;
-    }
-    if (!isLoggedIn) {
-      toast.error("Kampanya kodu kullanmak için giriş yapmalısınız!");
-      return;
-    }
-
+    if (!campaignCode.trim()) { setCampaignError("Lütfen bir kod girin"); return; }
+    if (!isLoggedIn) { toast.error("Kampanya kodu kullanmak için giriş yapmalısınız!"); return; }
     try {
-      const result = await api.post<{ discount?: number; discount_percent?: number; valid?: boolean }>(
-        "/coupons/validate",
-        { code: campaignCode.toUpperCase() }
-      );
-      const pct = result.discount_percent ?? result.discount ?? 0;
+      const pct = await validateCoupon(campaignCode);
       if (pct > 0) {
-        setDiscount(pct);
-        setCampaignError("");
-        toast.success(`%${pct} indirim uygulandı!`);
+        setDiscount(pct); setCampaignError(""); toast.success(`%${pct} indirim uygulandı!`);
       } else {
-        setDiscount(0);
-        setCampaignError("Geçersiz kampanya kodu!");
-        toast.error("Geçersiz kampanya kodu!");
+        setDiscount(0); setCampaignError("Geçersiz kampanya kodu!"); toast.error("Geçersiz kampanya kodu!");
       }
     } catch (err) {
       setDiscount(0);
       const message = err instanceof ApiError ? err.message : "Kupon doğrulanamadı";
-      setCampaignError(message);
+      setCampaignError(message); toast.error(message);
     }
   };
 

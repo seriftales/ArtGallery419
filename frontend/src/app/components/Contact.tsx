@@ -1,17 +1,44 @@
 import { useState } from "react";
+import { useNavigate } from "react-router";
 import { Mail, Phone, MapPin, Clock, Send } from "lucide-react";
 import { toast } from "sonner";
+import { api, ApiError } from "../../lib/api";
+import { auth } from "../../lib/auth";
+
+const SUBJECT_LABELS: Record<string, string> = {
+  general: "Genel Bilgi",
+  artwork: "Eserler Hakkında",
+  workshop: "Atölye Hakkında",
+  reservation: "Rezervasyon Sorunu",
+};
 
 export default function Contact() {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({ name: "", email: "", phone: "", subject: "", message: "" });
+  const [submitting, setSubmitting] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const ticket = { id: Date.now(), ...formData, status: "open", createdAt: new Date().toISOString() };
-    const tickets = JSON.parse(localStorage.getItem("supportTickets") || "[]");
-    localStorage.setItem("supportTickets", JSON.stringify([...tickets, ticket]));
-    toast.success("Mesajınız başarıyla gönderildi!");
-    setFormData({ name: "", email: "", phone: "", subject: "", message: "" });
+    if (!auth.isLoggedIn()) {
+      toast.error("Destek talebi göndermek için giriş yapmalısınız!");
+      navigate("/login");
+      return;
+    }
+    setSubmitting(true);
+    try {
+      const subjectText = SUBJECT_LABELS[formData.subject] || formData.subject;
+      await api.post("/tickets", {
+        subject: `${subjectText} - ${formData.name}`,
+        message: `${formData.message}\n\n---\nİletişim: ${formData.email}${formData.phone ? " / " + formData.phone : ""}`,
+      });
+      toast.success("Mesajınız başarıyla gönderildi!");
+      setFormData({ name: "", email: "", phone: "", subject: "", message: "" });
+    } catch (err) {
+      const message = err instanceof ApiError ? err.message : "Mesaj gönderilemedi";
+      toast.error(message);
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -90,9 +117,9 @@ export default function Contact() {
                   <label className="block mb-2 font-light text-sm">Mesajınız *</label>
                   <textarea value={formData.message} onChange={(e) => setFormData({ ...formData, message: e.target.value })} rows={6} className="w-full px-4 py-4 bg-muted/50 border border-border/50 rounded-2xl focus:outline-none focus:ring-2 focus:ring-primary/50" placeholder="Mesajınızı buraya yazın..." required />
                 </div>
-                <button type="submit" className="px-8 py-4 bg-gradient-to-r from-primary to-primary/80 text-primary-foreground rounded-2xl hover:shadow-xl hover:shadow-primary/20 transition-all duration-300 hover:scale-105 flex items-center space-x-2 font-medium">
+                <button type="submit" disabled={submitting} className="px-8 py-4 bg-gradient-to-r from-primary to-primary/80 text-primary-foreground rounded-2xl hover:shadow-xl hover:shadow-primary/20 transition-all duration-300 hover:scale-105 flex items-center space-x-2 font-medium disabled:opacity-60 disabled:cursor-not-allowed">
                   <Send className="w-5 h-5" />
-                  <span>Mesajı Gönder</span>
+                  <span>{submitting ? "Gönderiliyor..." : "Mesajı Gönder"}</span>
                 </button>
               </form>
             </div>

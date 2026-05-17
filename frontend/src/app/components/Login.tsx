@@ -29,6 +29,14 @@ export default function Login({ setIsLoggedIn }: LoginProps) {
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Session expired uyarısı (api.ts'den ?session_expired=1 ile geldi)
+  if (typeof window !== "undefined" && window.location.search.includes("session_expired=1")) {
+    setTimeout(() => {
+      toast.error("Oturumunuz sona erdi, lütfen tekrar giriş yapın");
+      window.history.replaceState({}, "", "/login");
+    }, 0);
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
