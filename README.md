@@ -31,7 +31,7 @@ ArtGallery419/
 │   └── .env                 # Gizli bilgiler 
 
 ```
-🚀 Kurulum Talimatları
+## 🚀 Kurulum Talimatları
 Projeyi yerel bilgisayarınızda ayağa kaldırmak için aşağıdaki adımları sırasıyla uygulayın.
 
 Ön Koşullar
