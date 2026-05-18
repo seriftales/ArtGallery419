@@ -9,6 +9,7 @@ const USER_KEY = "user";
 export interface AuthUser {
   id: string;
   name: string;
+  lastName?: string;
   email: string;
   role: "Customer" | "Admin" | "Artist" | string;
 }

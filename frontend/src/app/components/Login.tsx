@@ -16,6 +16,7 @@ interface LoginResponse {
   user: {
     id: string;
     firstName: string;
+    lastName?: string;
     role: "Customer" | "Admin" | "Artist" | string;
   };
 }
@@ -58,6 +59,7 @@ export default function Login({ setIsLoggedIn }: LoginProps) {
       auth.setUser({
         id: data.user.id,
         name: data.user.firstName,
+        lastName: data.user.lastName,
         email: formData.email,
         role: data.user.role,
       });

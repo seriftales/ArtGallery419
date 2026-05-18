@@ -13,6 +13,8 @@ const getAllArtworks = async (req, res) => {
                 aw.Category, 
                 aw.Image_URL, 
                 aw.Stock_Status,
+                aw.View_Count,
+                aw.Like_Count,
                 ar.Full_Name AS Artist_Name
             FROM Artworks aw
             LEFT JOIN Artists ar ON aw.Artist_ID = ar.Artist_ID
@@ -126,6 +128,24 @@ const incrementLike = async (req, res) => {
     }
 };
 
+
+// Eseri Görüntüleme (view_count +1)
+const incrementView = async (req, res) => {
+    const { artworkId } = req.params;
+    try {
+        const result = await pool.query(
+            "UPDATE Artworks SET View_Count = View_Count + 1 WHERE Artwork_ID = $1 RETURNING View_Count",
+            [artworkId]
+        );
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: "Eser bulunamadı." });
+        }
+        res.status(200).json({ success: true, views: result.rows[0].view_count });
+    } catch (error) {
+        res.status(500).json({ error: "Görüntülenme artırılamadı." });
+    }
+};
+
 // Kampanyalı Eserleri Görüntüleme
 const getCampaignArtworks = async (req, res) => {
     try {
@@ -144,5 +164,6 @@ module.exports = {
     deleteArtwork,
     addArtwork,
     incrementLike,
+    incrementView,
     getCampaignArtworks
 };

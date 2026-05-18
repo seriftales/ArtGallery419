@@ -18,16 +18,35 @@ export default function Profile() {
       navigate("/login");
       return;
     }
-    const u = auth.getUser();
-    if (u) {
-      // user.name yalnızca firstName tutuyor olabilir
-      const parts = (u.name || "").trim().split(/\s+/);
-      setFormData({
-        firstName: parts[0] || "",
-        lastName: parts.slice(1).join(" "),
-        email: u.email || "",
+    // Backend'den gerçek profil bilgilerini çek
+    let cancelled = false;
+    api.get<{ user_id: string; first_name: string; last_name: string; email: string; role: string } | { data: any }>("/user/profile")
+      .then((res: any) => {
+        if (cancelled) return;
+        // Backend response formatına esnek davran
+        const data = res?.data || res;
+        const firstName = data?.first_name || data?.firstName || "";
+        const lastName = data?.last_name || data?.lastName || "";
+        const email = data?.email || "";
+        setFormData({ firstName, lastName, email });
+        // auth.user'ı da güncelle
+        const u = auth.getUser();
+        if (u) {
+          auth.setUser({ ...u, name: firstName, lastName, email });
+        }
+      })
+      .catch(() => {
+        // Fallback: localStorage'tan
+        const u = auth.getUser();
+        if (u) {
+          setFormData({
+            firstName: u.name || "",
+            lastName: u.lastName || "",
+            email: u.email || "",
+          });
+        }
       });
-    }
+    return () => { cancelled = true; };
   }, [navigate]);
 
   const handleUpdateProfile = async (e: React.FormEvent) => {

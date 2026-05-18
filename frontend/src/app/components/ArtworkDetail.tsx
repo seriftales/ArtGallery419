@@ -39,6 +39,10 @@ export default function ArtworkDetail() {
   });
   const [paymentMethod, setPaymentMethod] = useState("Credit Card");
   const [submittingPurchase, setSubmittingPurchase] = useState(false);
+  const [showReviewForm, setShowReviewForm] = useState(false);
+  const [newRating, setNewRating] = useState(5);
+  const [newComment, setNewComment] = useState("");
+  const [submittingReview, setSubmittingReview] = useState(false);
 
   // İlk yükleme: eser + auth durum + favoriler + yorumlar
   useEffect(() => {
@@ -58,6 +62,10 @@ export default function ArtworkDetail() {
         if (cancelled) return;
         const found = res.data.find((a) => a.artwork_id === id);
         setArtwork(found || null);
+        // Görüntülenme sayısını artır (arka planda, hata olursa görmezden gel)
+        if (found) {
+          api.patch(`/artworks/${found.artwork_id}/view`, undefined, { skipAuth: true }).catch(() => {});
+        }
       } catch (err) {
         console.error("Eser yüklenemedi:", err);
         toast.error("Eser yüklenemedi");
@@ -211,6 +219,36 @@ export default function ArtworkDetail() {
       toast.error(message);
     } finally {
       setSubmittingPurchase(false);
+    }
+  };
+
+  const handleSubmitReview = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!artwork) return;
+    if (!newComment.trim()) {
+      toast.error("Lütfen bir yorum yazın");
+      return;
+    }
+    setSubmittingReview(true);
+    try {
+      await api.post("/reviews", {
+        targetId: artwork.artwork_id,
+        targetType: "Artwork",
+        rating: newRating,
+        commentText: newComment,
+      });
+      toast.success("Değerlendirmeniz eklendi!");
+      // Yorumları yeniden çek
+      const reviewsRes = await api.get<ApiList<Review>>(`/reviews/${artwork.artwork_id}`, { skipAuth: true });
+      setReviews(reviewsRes.data || []);
+      setShowReviewForm(false);
+      setNewComment("");
+      setNewRating(5);
+    } catch (err) {
+      const message = err instanceof ApiError ? err.message : "Değerlendirme eklenemedi";
+      toast.error(message);
+    } finally {
+      setSubmittingReview(false);
     }
   };
 
@@ -599,7 +637,65 @@ export default function ArtworkDetail() {
 
         {/* Reviews Section */}
         <div className="border-t border-border pt-16">
-          <h2 className="text-4xl mb-8 font-light">Değerlendirmeler</h2>
+          <div className="flex justify-between items-center mb-8 flex-wrap gap-4">
+            <h2 className="text-4xl font-light">Değerlendirmeler</h2>
+            {isLoggedIn && userRole !== "Admin" && !showReviewForm && (
+              <button
+                onClick={() => setShowReviewForm(true)}
+                className="px-6 py-3 bg-gradient-to-r from-primary to-primary/80 text-primary-foreground rounded-2xl hover:shadow-xl transition-all duration-300 hover:scale-105 font-medium"
+              >
+                ⭐ Değerlendir
+              </button>
+            )}
+          </div>
+
+          {showReviewForm && (
+            <form onSubmit={handleSubmitReview} className="mb-8 p-6 bg-muted/30 rounded-2xl border border-border/50 space-y-4">
+              <h3 className="text-2xl font-light">Değerlendirmenizi paylaşın</h3>
+              <div>
+                <label className="block mb-2 text-sm font-light">Puanınız</label>
+                <div className="flex space-x-2">
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <button
+                      key={star}
+                      type="button"
+                      onClick={() => setNewRating(star)}
+                      className="hover:scale-110 transition-transform"
+                    >
+                      <Star className={`w-8 h-8 ${star <= newRating ? "fill-yellow-400 text-yellow-400" : "text-gray-300"}`} />
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <label className="block mb-2 text-sm font-light">Yorumunuz</label>
+                <textarea
+                  value={newComment}
+                  onChange={(e) => setNewComment(e.target.value)}
+                  rows={4}
+                  className="w-full px-4 py-3 bg-background border border-border/50 rounded-2xl focus:outline-none focus:ring-2 focus:ring-primary/50"
+                  placeholder="Bu eser hakkındaki düşüncelerinizi paylaşın..."
+                  required
+                />
+              </div>
+              <div className="flex gap-3">
+                <button
+                  type="submit"
+                  disabled={submittingReview}
+                  className="px-6 py-3 bg-primary text-primary-foreground rounded-xl hover:bg-primary/90 transition-colors font-medium disabled:opacity-60"
+                >
+                  {submittingReview ? "Gönderiliyor..." : "Gönder"}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { setShowReviewForm(false); setNewComment(""); setNewRating(5); }}
+                  className="px-6 py-3 bg-secondary text-secondary-foreground rounded-xl hover:bg-secondary/80 transition-colors font-medium"
+                >
+                  İptal
+                </button>
+              </div>
+            </form>
+          )}
 
           {reviews.length === 0 ? (
             <div className="text-center py-12">

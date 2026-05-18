@@ -10,20 +10,23 @@ export default function Home() {
   const [featuredArtworks, setFeaturedArtworks] = useState<Artwork[]>([]);
   const [upcomingWorkshops, setUpcomingWorkshops] = useState<ArtEvent[]>([]);
   const [loading, setLoading] = useState(true);
+  const [publicStats, setPublicStats] = useState({ totalArtworks: 0, totalArtists: 0, totalEvents: 0, totalCustomers: 0 });
 
   useEffect(() => {
     let cancelled = false;
 
     const load = async () => {
       try {
-        const [artworksRes, eventsRes] = await Promise.all([
+        const [artworksRes, eventsRes, statsRes] = await Promise.all([
           api.get<ApiList<Artwork>>("/artworks", { skipAuth: true }),
           api.get<ApiList<ArtEvent>>("/events", { skipAuth: true }),
+          api.get<{ data: { totalArtworks: number; totalArtists: number; totalEvents: number; totalCustomers: number } }>("/stats/public", { skipAuth: true }),
         ]);
 
         if (cancelled) return;
         setFeaturedArtworks(artworksRes.data.slice(0, 3));
         setUpcomingWorkshops(eventsRes.data.slice(0, 3));
+        if (statsRes?.data) setPublicStats(statsRes.data);
       } catch (err) {
         // Sessiz başarısızlık: sayfa yine açılmalı, sadece sekmeler boş kalır
         console.error("Home verisi yüklenemedi:", err);
@@ -95,19 +98,19 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
             <div className="group bg-gradient-to-br from-background via-background to-primary/5 border border-border/50 rounded-2xl p-8 text-center hover:shadow-xl hover:shadow-primary/10 transition-all duration-300 hover:-translate-y-1">
-              <div className="text-5xl mb-3 font-light bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">250+</div>
+              <div className="text-5xl mb-3 font-light bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">{publicStats.totalArtworks}</div>
               <p className="text-muted-foreground font-light">Sanat Eseri</p>
             </div>
             <div className="group bg-gradient-to-br from-background via-background to-primary/5 border border-border/50 rounded-2xl p-8 text-center hover:shadow-xl hover:shadow-primary/10 transition-all duration-300 hover:-translate-y-1">
-              <div className="text-5xl mb-3 font-light bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">50+</div>
+              <div className="text-5xl mb-3 font-light bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">{publicStats.totalArtists}</div>
               <p className="text-muted-foreground font-light">Usta Sanatçı</p>
             </div>
             <div className="group bg-gradient-to-br from-background via-background to-primary/5 border border-border/50 rounded-2xl p-8 text-center hover:shadow-xl hover:shadow-primary/10 transition-all duration-300 hover:-translate-y-1">
-              <div className="text-5xl mb-3 font-light bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">120+</div>
+              <div className="text-5xl mb-3 font-light bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">{publicStats.totalEvents}</div>
               <p className="text-muted-foreground font-light">Atölye Etkinliği</p>
             </div>
             <div className="group bg-gradient-to-br from-background via-background to-primary/5 border border-border/50 rounded-2xl p-8 text-center hover:shadow-xl hover:shadow-primary/10 transition-all duration-300 hover:-translate-y-1">
-              <div className="text-5xl mb-3 font-light bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">3000+</div>
+              <div className="text-5xl mb-3 font-light bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">{publicStats.totalCustomers}</div>
               <p className="text-muted-foreground font-light">Mutlu Müşteri</p>
             </div>
           </div>

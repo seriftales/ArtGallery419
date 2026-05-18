@@ -65,6 +65,9 @@ app.use('/api/coupons', couponRoutes);
 const ticketRoutes = require('./src/routes/ticketRoutes');
 app.use('/api/tickets', ticketRoutes);
 
+const statsRoutes = require('./src/routes/statsRoutes');
+app.use('/api/stats', statsRoutes);
+
 
 //Test Endpoint
 app.get('/api/health', (req, res) => {

@@ -27,9 +27,14 @@ export default function ArtistDashboard({ isLoggedIn }: ArtistDashboardProps) {
         const res = await api.get<ApiList<Artwork>>("/artworks", { skipAuth: true });
         if (cancelled) return;
         // Sanatçının kendi adına göre filtreleme
-        const mine = res.data.filter((a) =>
-          a.artist_name && user?.name && a.artist_name.toLowerCase().includes(user.name.toLowerCase())
-        );
+        // Tam ad eşleşmesi: "Frida Kahlo" gibi
+        const fullName = ((user?.name || "") + " " + (user?.lastName || "")).trim().toLowerCase();
+        const firstName = (user?.name || "").trim().toLowerCase();
+        const mine = res.data.filter((a) => {
+          if (!a.artist_name) return false;
+          const artist = a.artist_name.toLowerCase();
+          return (fullName && artist === fullName) || (firstName && artist.startsWith(firstName));
+        });
         setMyArtworks(mine);
       } catch (err) {
         const message = err instanceof ApiError ? err.message : "Eserler yüklenemedi";

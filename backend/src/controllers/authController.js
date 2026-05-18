@@ -28,7 +28,7 @@ const login = async (req, res) => {
         res.status(200).json({ 
             message: "Giriş başarılı!", 
             token, 
-            user: { id: user.user_id, firstName: user.first_name, role: user.role } 
+            user: { id: user.user_id, firstName: user.first_name, lastName: user.last_name, role: user.role } 
         });
 
     } catch (err) {
