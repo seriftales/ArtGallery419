@@ -141,6 +141,7 @@ export default function ArtworkGallery() {
         toast.info("Favorilerden çıkarıldı");
       } else {
         await api.post("/favorites", { artworkId });
+        api.patch(`/artworks/${artworkId}/like`).catch(() => {});
         toast.success("Favorilere eklendi!");
       }
     } catch (err) {

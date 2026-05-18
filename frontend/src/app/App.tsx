@@ -59,7 +59,7 @@ function Navigation({ isLoggedIn, setIsLoggedIn, favoritesCount }: any) {
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-8">
             {/* Admin: Sadece Admin Paneli */}
-            {userRole === 'admin' ? (
+            {userRole === 'Admin' ? (
               <Link
                 to="/admin"
                 className={`relative py-2 transition-all duration-300 ${
@@ -131,7 +131,7 @@ function Navigation({ isLoggedIn, setIsLoggedIn, favoritesCount }: any) {
                 </Link>
 
                 {/* Artist: Sanatçı Paneli */}
-                {userRole === 'artist' && (
+                {userRole === 'Artist' && (
                   <Link
                     to="/artist/dashboard"
                     className={`relative py-2 transition-all duration-300 ${
@@ -148,14 +148,19 @@ function Navigation({ isLoggedIn, setIsLoggedIn, favoritesCount }: any) {
             )}
 
             <div className="flex items-center space-x-3 ml-4 pl-4 border-l border-border/50">
-              {/* Admin: Sadece çıkış */}
-              {userRole === 'admin' ? (
-                <button
-                  onClick={handleLogout}
-                  className="px-5 py-2 bg-gradient-to-r from-secondary to-secondary/80 text-secondary-foreground rounded-full hover:shadow-lg transition-all duration-300 hover:scale-105"
-                >
-                  Çıkış
-                </button>
+              {/* Admin: Profil + Çıkış */}
+              {userRole === 'Admin' ? (
+                <>
+                  <Link to="/profile" className="p-2 hover:bg-accent rounded-full transition-all duration-300 group">
+                    <User className="w-5 h-5 group-hover:scale-110 transition-transform" />
+                  </Link>
+                  <button
+                    onClick={handleLogout}
+                    className="px-5 py-2 bg-gradient-to-r from-secondary to-secondary/80 text-secondary-foreground rounded-full hover:shadow-lg transition-all duration-300 hover:scale-105"
+                  >
+                    Çıkış
+                  </button>
+                </>
               ) : (
                 <>
                   {/* User & Artist: Favoriler */}
@@ -215,10 +220,11 @@ function Navigation({ isLoggedIn, setIsLoggedIn, favoritesCount }: any) {
         {/* Mobile Navigation */}
         {mobileMenuOpen && (
           <div className="md:hidden py-6 space-y-3 bg-background/95 backdrop-blur-xl border-t border-border">
-            {/* Admin: Sadece Admin Paneli + Çıkış */}
-            {userRole === 'admin' ? (
+            {/* Admin: Admin Paneli + Profil + Çıkış */}
+            {userRole === 'Admin' ? (
               <>
                 <Link to="/admin" className="block py-2 px-4 rounded-lg hover:bg-accent transition-colors bg-primary/10">Admin Paneli</Link>
+                <Link to="/profile" className="block py-2 px-4 rounded-lg hover:bg-accent transition-colors">Profilim</Link>
                 <button
                   onClick={handleLogout}
                   className="w-full text-left py-2 px-4 rounded-lg hover:bg-accent transition-colors"
@@ -235,7 +241,7 @@ function Navigation({ isLoggedIn, setIsLoggedIn, favoritesCount }: any) {
                 <Link to="/compare" className="block py-2 px-4 rounded-lg hover:bg-accent transition-colors">Karşılaştır</Link>
                 <Link to="/contact" className="block py-2 px-4 rounded-lg hover:bg-accent transition-colors">İletişim</Link>
 
-                {userRole === 'artist' && (
+                {userRole === 'Artist' && (
                   <Link to="/artist/dashboard" className="block py-2 px-4 rounded-lg hover:bg-accent transition-colors bg-primary/10">Sanatçı Paneli</Link>
                 )}
 

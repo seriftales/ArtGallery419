@@ -37,6 +37,7 @@ export default function ArtworkDetail() {
     address: "",
     notes: ""
   });
+  const [paymentMethod, setPaymentMethod] = useState("Credit Card");
   const [submittingPurchase, setSubmittingPurchase] = useState(false);
 
   // İlk yükleme: eser + auth durum + favoriler + yorumlar
@@ -109,6 +110,8 @@ export default function ArtworkDetail() {
         toast.info("Favorilerden çıkarıldı");
       } else {
         await api.post("/favorites", { artworkId: artwork.artwork_id });
+        // Beğeni sayısını da artır (Artist dashboard ve liste için)
+        api.patch(`/artworks/${artwork.artwork_id}/like`).catch(() => {});
         toast.success("Favorilere eklendi!");
       }
     } catch (err) {
@@ -193,17 +196,11 @@ export default function ArtworkDetail() {
   const handlePurchase = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!artwork) return;
-
     setSubmittingPurchase(true);
     try {
       await api.post("/orders", {
         artworkId: artwork.artwork_id,
-        couponCode: discount > 0 ? campaignCode : undefined,
-        shippingAddress: purchaseFormData.address,
-        contactName: purchaseFormData.name,
-        contactEmail: purchaseFormData.email,
-        contactPhone: purchaseFormData.phone,
-        notes: purchaseFormData.notes,
+        paymentMethod: paymentMethod,
       });
       const totalPrice = calculateTotal();
       toast.success(`Satın alım başarılı! Toplam: ₺${totalPrice.toLocaleString("tr-TR")}`);
@@ -504,6 +501,20 @@ export default function ArtworkDetail() {
                   </div>
                 </div>
 
+
+                <div>
+                  <label className="block mb-2 text-sm font-light">Ödeme Yöntemi</label>
+                  <select
+                    value={paymentMethod}
+                    onChange={(e) => setPaymentMethod(e.target.value)}
+                    className="w-full px-4 py-3 bg-background border border-border/50 rounded-2xl focus:outline-none focus:ring-2 focus:ring-primary/50"
+                    required
+                  >
+                    <option value="Credit Card">💳 Kredi Kartı</option>
+                    <option value="Bank Transfer">🏦 Havale / EFT</option>
+                    <option value="Cash">💵 Nakit</option>
+                  </select>
+                </div>
                 <div>
                   <label className="block mb-2 text-sm font-light">Teslimat Adresi</label>
                   <textarea

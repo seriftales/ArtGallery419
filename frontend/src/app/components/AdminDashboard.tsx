@@ -54,26 +54,28 @@ export default function AdminDashboard({ isLoggedIn }: AdminDashboardProps) {
 
     let cancelled = false;
     const load = async () => {
-      try {
-        const [sum, aStats, eStats, aw, ev] = await Promise.all([
-          api.get<{ success: boolean; data: DashboardSummary }>("/admin/summary"),
-          api.get<{ success: boolean; data: ArtworkStat[] }>("/admin/stats/artworks"),
-          api.get<{ success: boolean; data: EventStat[] }>("/admin/stats/events"),
-          api.get<ApiList<Artwork>>("/artworks", { skipAuth: true }),
-          api.get<ApiList<ArtEvent>>("/events", { skipAuth: true }),
-        ]);
-        if (cancelled) return;
-        setSummary(sum.data);
-        setArtworkStats(aStats.data || []);
-        setEventStats(eStats.data || []);
-        setArtworks(aw.data || []);
-        setEvents(ev.data || []);
-      } catch (err) {
-        const message = err instanceof ApiError ? err.message : "Veriler yüklenemedi";
-        toast.error(message);
-      } finally {
-        if (!cancelled) setLoading(false);
+      const results = await Promise.allSettled([
+        api.get<{ success: boolean; data: DashboardSummary }>("/admin/summary"),
+        api.get<{ success: boolean; data: ArtworkStat[] }>("/admin/stats/artworks"),
+        api.get<{ success: boolean; data: EventStat[] }>("/admin/stats/events"),
+        api.get<ApiList<Artwork>>("/artworks", { skipAuth: true }),
+        api.get<ApiList<ArtEvent>>("/events", { skipAuth: true }),
+      ]);
+      if (cancelled) return;
+
+      const [sumR, aStatsR, eStatsR, awR, evR] = results;
+      if (sumR.status === "fulfilled") setSummary(sumR.value.data);
+      if (aStatsR.status === "fulfilled") setArtworkStats(aStatsR.value.data || []);
+      if (eStatsR.status === "fulfilled") setEventStats(eStatsR.value.data || []);
+      if (awR.status === "fulfilled") setArtworks(awR.value.data || []);
+      if (evR.status === "fulfilled") setEvents(evR.value.data || []);
+
+      // Sadece tüm istekler patlarsa hata göster
+      const allFailed = results.every((r) => r.status === "rejected");
+      if (allFailed) {
+        toast.error("Veriler yüklenemedi");
       }
+      setLoading(false);
     };
     load();
     return () => { cancelled = true; };
@@ -285,7 +287,14 @@ export default function AdminDashboard({ isLoggedIn }: AdminDashboardProps) {
                         </td>
                         <td className="py-4 px-4 text-center font-light">{e.capacity}</td>
                         <td className="py-4 px-4 text-center text-muted-foreground font-light">{stat?.total_reservations ?? 0}</td>
-                        <td className="py-4 px-4 text-center font-light">{stat?.occupancy_rate ? `%${parseFloat(stat.occupancy_rate).toFixed(0)}` : "-"}</td>
+                        <td className="py-4 px-4 text-center font-light">{(() => {
+                          const reservations = parseInt(stat?.total_reservations || "0");
+                          const remaining = e.capacity || 0;
+                          const totalCapacity = remaining + reservations;
+                          if (totalCapacity === 0) return "-";
+                          const rate = Math.round((reservations / totalCapacity) * 100);
+                          return `%${rate}`;
+                        })()}</td>
                         <td className="py-4 px-4 text-center font-light">{formatPrice(e.price)}</td>
                       </tr>
                     );

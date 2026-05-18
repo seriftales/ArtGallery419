@@ -33,12 +33,12 @@ const getEventStats = async (req, res) => {
                 e.View_Count,
                 COUNT(res.Reservation_ID) as Total_Reservations,
                 -- Matematiksel Doluluk Oranı Yüzdesi
-                ROUND((COUNT(res.Reservation_ID)::numeric / e.Capacity) * 100, 2) as Occupancy_Rate,
+                ROUND((COUNT(res.Reservation_ID)::numeric / NULLIF(e.Capacity, 0)) * 100, 2) as Occupancy_Rate,
                 COALESCE(AVG(r.Rating), 0) as Average_Rating
             FROM Events e
             LEFT JOIN Reservations res ON e.Event_ID = res.Event_ID AND res.Status = 'Confirmed'
             LEFT JOIN Reviews r ON e.Event_ID = r.Target_ID AND r.Target_Type = 'Event'
-            GROUP BY e.Event_ID
+            GROUP BY e.Event_ID, e.Title, e.Capacity, e.View_Count
         `;
         const { rows } = await pool.query(query);
         res.status(200).json({ success: true, data: rows });

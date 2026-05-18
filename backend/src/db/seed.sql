@@ -118,3 +118,295 @@ INSERT INTO Reviews (Review_ID, User_ID, Target_ID, Target_Type, Rating, Comment
 ('f4444444-4444-4444-4444-444444444444', 'a5555555-5555-5555-5555-555555555555', 'c2000001-0000-0000-0000-000000000001', 'Artwork', 5, 'Mavi dönem hayranlarına şiddetle tavsiye ederim.', 'Beğenmenize sevindim!', '2026-04-20 14:15:00', 22),
 ('f5555555-5555-5555-5555-555555555555', '22222222-2222-2222-2222-222222222222', 'c2000003-0000-0000-0000-000000000003', 'Artwork', 4, 'Heykel kalitesi çok iyi, salonda harika duruyor.', NULL, NULL, 5),
 ('f6666666-6666-6666-6666-666666666666', 'a4444444-4444-4444-4444-444444444444', 'c3000003-0000-0000-0000-000000000003', 'Artwork', 5, 'Buğday tarlası tablosu odamı aydınlatıyor.', NULL, NULL, 9);
+
+
+-- ============================================================
+-- GENİŞLETİLMİŞ TEST VERİSİ — GERÇEK GALERİ DENEYİMİ İÇİN
+-- ============================================================
+
+-- 12 YENİ MÜŞTERİ (yorumlar, satışlar, rezervasyonlar için)
+INSERT INTO Users (User_ID, First_Name, Last_Name, Email, Password_Hash, Role) VALUES
+('ba111111-aaaa-bbbb-cccc-111111111111', 'Selin', 'Aydın', 'selin@test.com', 'hashed_pw_s', 'Customer'),
+('ba111111-aaaa-bbbb-cccc-222222222222', 'Burak', 'Çelik', 'burak@test.com', 'hashed_pw_b', 'Customer'),
+('ba111111-aaaa-bbbb-cccc-333333333333', 'Deniz', 'Şahin', 'deniz@test.com', 'hashed_pw_d', 'Customer'),
+('ba111111-aaaa-bbbb-cccc-444444444444', 'Elif', 'Korkmaz', 'elif@test.com', 'hashed_pw_e', 'Customer'),
+('ba111111-aaaa-bbbb-cccc-555555555555', 'Furkan', 'Aksoy', 'furkan@test.com', 'hashed_pw_f', 'Customer'),
+('ba111111-aaaa-bbbb-cccc-666666666666', 'Gizem', 'Polat', 'gizem@test.com', 'hashed_pw_g', 'Customer'),
+('ba111111-aaaa-bbbb-cccc-777777777777', 'Hakan', 'Erdoğan', 'hakan@test.com', 'hashed_pw_h', 'Customer'),
+('ba111111-aaaa-bbbb-cccc-888888888888', 'Iraz', 'Güneş', 'iraz@test.com', 'hashed_pw_i', 'Customer'),
+('ba111111-aaaa-bbbb-cccc-999999999999', 'Kerem', 'Yavuz', 'kerem@test.com', 'hashed_pw_k', 'Customer'),
+('ba111111-aaaa-bbbb-cccc-aaaaaaaaaaaa', 'Leyla', 'Toprak', 'leyla@test.com', 'hashed_pw_l', 'Customer'),
+('ba111111-aaaa-bbbb-cccc-bbbbbbbbbbbb', 'Murat', 'Kara', 'murat@test.com', 'hashed_pw_m', 'Customer'),
+('ba111111-aaaa-bbbb-cccc-cccccccccccc', 'Nazlı', 'Öztürk', 'nazli@test.com', 'hashed_pw_n', 'Customer');
+
+-- VIEW_COUNT ve LIKE_COUNT'ları gerçekçi sayılarla güncelle (mevcut eserler için)
+UPDATE Artworks SET View_Count = 458, Like_Count = 67 WHERE Artwork_ID = '55555555-5555-5555-5555-555555555555'; -- Kaplumbağa Terbiyecisi
+UPDATE Artworks SET View_Count = 312, Like_Count = 45 WHERE Artwork_ID = '66666666-6666-6666-6666-666666666666'; -- Silah Taciri
+UPDATE Artworks SET View_Count = 287, Like_Count = 52 WHERE Artwork_ID = 'c1000001-0000-0000-0000-000000000001'; -- Kırık Sütun
+UPDATE Artworks SET View_Count = 615, Like_Count = 124 WHERE Artwork_ID = 'c1000002-0000-0000-0000-000000000002'; -- İki Frida
+UPDATE Artworks SET View_Count = 189, Like_Count = 31 WHERE Artwork_ID = 'c1000003-0000-0000-0000-000000000003'; -- Yaralı Geyik
+UPDATE Artworks SET View_Count = 542, Like_Count = 98 WHERE Artwork_ID = 'c2000001-0000-0000-0000-000000000001'; -- Mavi Dönem
+UPDATE Artworks SET View_Count = 398, Like_Count = 76 WHERE Artwork_ID = 'c2000002-0000-0000-0000-000000000002'; -- Kübist Natürmort
+UPDATE Artworks SET View_Count = 234, Like_Count = 41 WHERE Artwork_ID = 'c2000003-0000-0000-0000-000000000003'; -- Bronz Boğa
+UPDATE Artworks SET View_Count = 156, Like_Count = 28 WHERE Artwork_ID = 'c2000004-0000-0000-0000-000000000004'; -- Güvercin
+UPDATE Artworks SET View_Count = 847, Like_Count = 178 WHERE Artwork_ID = 'c3000001-0000-0000-0000-000000000001'; -- Yıldızlı Gece
+UPDATE Artworks SET View_Count = 723, Like_Count = 156 WHERE Artwork_ID = 'c3000002-0000-0000-0000-000000000002'; -- Ayçiçekleri
+UPDATE Artworks SET View_Count = 392, Like_Count = 68 WHERE Artwork_ID = 'c3000003-0000-0000-0000-000000000003'; -- Buğday Tarlası
+UPDATE Artworks SET View_Count = 128, Like_Count = 22 WHERE Artwork_ID = 'c3000004-0000-0000-0000-000000000004'; -- Köy Manzarası
+UPDATE Artworks SET View_Count = 245, Like_Count = 39 WHERE Artwork_ID = 'c4000001-0000-0000-0000-000000000001'; -- Müşteri Bekleyen Esnaf
+UPDATE Artworks SET View_Count = 87, Like_Count = 16 WHERE Artwork_ID = 'c4000002-0000-0000-0000-000000000002'; -- Akrilik Etüt
+UPDATE Artworks SET View_Count = 298, Like_Count = 54 WHERE Artwork_ID = 'c4000003-0000-0000-0000-000000000003'; -- Mihrap Çalışması
+UPDATE Artworks SET View_Count = 64, Like_Count = 11 WHERE Artwork_ID = 'c4000004-0000-0000-0000-000000000004'; -- Karma Teknik
+
+-- ETKİNLİKLERE de View_Count ekleyelim
+UPDATE Events SET View_Count = 234 WHERE Event_ID = '77777777-7777-7777-7777-777777777777';
+UPDATE Events SET View_Count = 412 WHERE Event_ID = 'd1111111-1111-1111-1111-111111111111';
+UPDATE Events SET View_Count = 318 WHERE Event_ID = 'd2222222-2222-2222-2222-222222222222';
+UPDATE Events SET View_Count = 156 WHERE Event_ID = 'd3333333-3333-3333-3333-333333333333';
+UPDATE Events SET View_Count = 287 WHERE Event_ID = 'd4444444-4444-4444-4444-444444444444';
+UPDATE Events SET View_Count = 524 WHERE Event_ID = 'd5555555-5555-5555-5555-555555555555';
+
+-- 25 YENİ YORUM (eserlere ve etkinliklere dağılmış)
+INSERT INTO Reviews (Review_ID, User_ID, Target_ID, Target_Type, Rating, Comment_Text, Reply_Text, Replied_At, Helpful_Votes) VALUES
+-- Kaplumbağa Terbiyecisi yorumları
+('aa000001-0000-0000-0000-000000000001', 'ba111111-aaaa-bbbb-cccc-111111111111', '55555555-5555-5555-5555-555555555555', 'Artwork', 5, 'Türk resim sanatının başyapıtlarından, evimde gururla sergiliyorum.', NULL, NULL, 23),
+('aa000001-0000-0000-0000-000000000002', 'ba111111-aaaa-bbbb-cccc-222222222222', '55555555-5555-5555-5555-555555555555', 'Artwork', 5, 'Detaylar muhteşem, fiyatına da değer kesinlikle.', 'Teşekkürler, eserin yeni sahibine kavuşması sevindirici.', '2026-04-22 11:30:00', 18),
+('aa000001-0000-0000-0000-000000000003', 'ba111111-aaaa-bbbb-cccc-333333333333', '55555555-5555-5555-5555-555555555555', 'Artwork', 4, 'Çok güzel ama beklediğimden biraz farklıydı renkler.', NULL, NULL, 7),
+
+-- Silah Taciri
+('aa000002-0000-0000-0000-000000000001', 'ba111111-aaaa-bbbb-cccc-444444444444', '66666666-6666-6666-6666-666666666666', 'Artwork', 5, 'Osman Hamdi Bey hayranıyım, bu eser kolleksiyonumun başında.', NULL, NULL, 14),
+('aa000002-0000-0000-0000-000000000002', 'ba111111-aaaa-bbbb-cccc-555555555555', '66666666-6666-6666-6666-666666666666', 'Artwork', 4, 'Kampanya fiyatıyla aldım, çok memnun kaldım.', NULL, NULL, 9),
+
+-- Kırık Sütun (Frida)
+('aa000003-0000-0000-0000-000000000001', 'ba111111-aaaa-bbbb-cccc-666666666666', 'c1000001-0000-0000-0000-000000000001', 'Artwork', 5, 'Frida''nın acısını her bakışta hissediyorum, çok güçlü bir eser.', NULL, NULL, 31),
+('aa000003-0000-0000-0000-000000000002', 'ba111111-aaaa-bbbb-cccc-777777777777', 'c1000001-0000-0000-0000-000000000001', 'Artwork', 4, 'Otoportrenin gücü inanılmaz.', NULL, NULL, 12),
+
+-- İki Frida
+('aa000004-0000-0000-0000-000000000001', 'ba111111-aaaa-bbbb-cccc-888888888888', 'c1000002-0000-0000-0000-000000000002', 'Artwork', 5, 'Kimlik temasını bu kadar güzel işleyen başka eser zor bulunur.', 'İlginiz için teşekkürler!', '2026-04-25 09:15:00', 28),
+('aa000004-0000-0000-0000-000000000002', 'ba111111-aaaa-bbbb-cccc-999999999999', 'c1000002-0000-0000-0000-000000000002', 'Artwork', 5, 'Salon duvarımda öne çıkıyor, herkes soruyor.', NULL, NULL, 17),
+('aa000004-0000-0000-0000-000000000003', 'ba111111-aaaa-bbbb-cccc-aaaaaaaaaaaa', 'c1000002-0000-0000-0000-000000000002', 'Artwork', 4, 'Çok güzel ama %20 indirim olmasa pahalı olurdu.', NULL, NULL, 11),
+
+-- Mavi Dönem Picasso
+('aa000005-0000-0000-0000-000000000001', 'ba111111-aaaa-bbbb-cccc-bbbbbbbbbbbb', 'c2000001-0000-0000-0000-000000000001', 'Artwork', 5, 'Picasso''nun bu dönemi en sevdiğim, gerçek bir hazine.', NULL, NULL, 35),
+('aa000005-0000-0000-0000-000000000002', 'ba111111-aaaa-bbbb-cccc-cccccccccccc', 'c2000001-0000-0000-0000-000000000001', 'Artwork', 5, 'Melankolik atmosfer çok başarılı yansıtılmış.', 'Mavi dönemin ruhunu yakaladığınızı duymak güzel.', '2026-05-01 14:20:00', 22),
+('aa000005-0000-0000-0000-000000000003', 'a4444444-4444-4444-4444-444444444444', 'c2000001-0000-0000-0000-000000000001', 'Artwork', 3, 'İyi eser ama biraz daha canlı renkler olabilirdi.', NULL, NULL, 4),
+
+-- Kübist Natürmort
+('aa000006-0000-0000-0000-000000000001', 'a5555555-5555-5555-5555-555555555555', 'c2000002-0000-0000-0000-000000000002', 'Artwork', 5, 'Kübizmin tüm öğeleri burada toplanmış.', NULL, NULL, 19),
+
+-- Bronz Boğa
+('aa000007-0000-0000-0000-000000000001', 'ba111111-aaaa-bbbb-cccc-111111111111', 'c2000003-0000-0000-0000-000000000003', 'Artwork', 4, 'Üç boyutlu olarak çok etkileyici, ışık altında daha güzel görünüyor.', NULL, NULL, 13),
+
+-- Yıldızlı Gece
+('aa000008-0000-0000-0000-000000000001', 'ba111111-aaaa-bbbb-cccc-222222222222', 'c3000001-0000-0000-0000-000000000001', 'Artwork', 5, 'Van Gogh''un dehası bu eserde belli oluyor, gece manzarası muhteşem.', NULL, NULL, 42),
+('aa000008-0000-0000-0000-000000000002', 'ba111111-aaaa-bbbb-cccc-333333333333', 'c3000001-0000-0000-0000-000000000001', 'Artwork', 5, 'Yıldızların hareketini hissediyorsunuz, inanılmaz.', NULL, NULL, 38),
+('aa000008-0000-0000-0000-000000000003', 'ba111111-aaaa-bbbb-cccc-444444444444', 'c3000001-0000-0000-0000-000000000001', 'Artwork', 5, 'Kampanyalı fiyatına alabildiğim için şanslıyım.', 'Memnuniyetinizi paylaşmanız çok değerli.', '2026-05-03 10:45:00', 25),
+
+-- Buğday Tarlası
+('aa000009-0000-0000-0000-000000000001', 'ba111111-aaaa-bbbb-cccc-555555555555', 'c3000003-0000-0000-0000-000000000003', 'Artwork', 4, 'Doğa sevenler için ideal, renk paleti dingin.', NULL, NULL, 8),
+
+-- Müşteri Bekleyen Esnaf
+('aa000010-0000-0000-0000-000000000001', 'ba111111-aaaa-bbbb-cccc-666666666666', 'c4000001-0000-0000-0000-000000000001', 'Artwork', 4, 'Çarşı sahnesi çok detaylı, dönem ruhunu yansıtıyor.', NULL, NULL, 6),
+
+-- Mihrap Çalışması
+('aa000011-0000-0000-0000-000000000001', 'ba111111-aaaa-bbbb-cccc-777777777777', 'c4000003-0000-0000-0000-000000000003', 'Artwork', 5, 'Mimari detaylar şahane, fiyatına değer.', NULL, NULL, 11),
+
+-- ETKİNLİK YORUMLARI
+('aa000012-0000-0000-0000-000000000001', 'ba111111-aaaa-bbbb-cccc-888888888888', '77777777-7777-7777-7777-777777777777', 'Event', 5, 'Çok bilgilendirici bir seminerdi, tekrar katılırım.', NULL, NULL, 7),
+('aa000012-0000-0000-0000-000000000002', 'ba111111-aaaa-bbbb-cccc-999999999999', '77777777-7777-7777-7777-777777777777', 'Event', 4, 'Konu seçimi güzeldi ama biraz daha uzun olabilirdi.', NULL, NULL, 4),
+('aa000013-0000-0000-0000-000000000001', 'ba111111-aaaa-bbbb-cccc-aaaaaaaaaaaa', 'd1111111-1111-1111-1111-111111111111', 'Event', 5, 'Yağlı boya atölyesi harikaydı, eğitmen çok ilgiliydi.', NULL, NULL, 12),
+('aa000013-0000-0000-0000-000000000002', 'ba111111-aaaa-bbbb-cccc-bbbbbbbbbbbb', 'd1111111-1111-1111-1111-111111111111', 'Event', 5, 'Malzeme kalitesi yüksekti, eğitim doyurucuydu.', NULL, NULL, 9);
+
+-- SİPARİŞLER (8 adet, çeşitli durumlarda)
+INSERT INTO Orders (Order_ID, User_ID, Total_Amount, Payment_Method, Status) VALUES
+('da000001-0000-0000-0000-000000000001', 'ba111111-aaaa-bbbb-cccc-111111111111', 85000.00, 'Credit Card', 'Completed'),
+('da000001-0000-0000-0000-000000000002', 'ba111111-aaaa-bbbb-cccc-222222222222', 120000.00, 'Bank Transfer', 'Completed'),
+('da000001-0000-0000-0000-000000000003', 'ba111111-aaaa-bbbb-cccc-333333333333', 28000.00, 'Credit Card', 'Completed'),
+('da000001-0000-0000-0000-000000000004', 'ba111111-aaaa-bbbb-cccc-444444444444', 145000.00, 'Credit Card', 'Completed'),
+('da000001-0000-0000-0000-000000000005', 'ba111111-aaaa-bbbb-cccc-555555555555', 42000.00, 'Credit Card', 'Completed'),
+('da000001-0000-0000-0000-000000000006', 'ba111111-aaaa-bbbb-cccc-666666666666', 95000.00, 'Bank Transfer', 'Pending'),
+('da000001-0000-0000-0000-000000000007', 'ba111111-aaaa-bbbb-cccc-777777777777', 65000.00, 'Credit Card', 'Completed'),
+('da000001-0000-0000-0000-000000000008', 'ba111111-aaaa-bbbb-cccc-888888888888', 15000.00, 'Credit Card', 'Completed');
+
+-- SİPARİŞ KALEMLERİ
+INSERT INTO Order_Items (Item_ID, Order_ID, Artwork_ID, Price_At_Purchase) VALUES
+('ea000001-0000-0000-0000-000000000001', 'da000001-0000-0000-0000-000000000001', 'c1000001-0000-0000-0000-000000000001', 85000.00),
+('ea000001-0000-0000-0000-000000000002', 'da000001-0000-0000-0000-000000000002', 'c1000002-0000-0000-0000-000000000002', 120000.00),
+('ea000001-0000-0000-0000-000000000003', 'da000001-0000-0000-0000-000000000003', 'c3000004-0000-0000-0000-000000000004', 28000.00),
+('ea000001-0000-0000-0000-000000000004', 'da000001-0000-0000-0000-000000000004', 'c3000003-0000-0000-0000-000000000003', 145000.00),
+('ea000001-0000-0000-0000-000000000005', 'da000001-0000-0000-0000-000000000005', 'c4000001-0000-0000-0000-000000000001', 42000.00),
+('ea000001-0000-0000-0000-000000000006', 'da000001-0000-0000-0000-000000000006', 'c2000003-0000-0000-0000-000000000003', 95000.00),
+('ea000001-0000-0000-0000-000000000007', 'da000001-0000-0000-0000-000000000007', 'c1000003-0000-0000-0000-000000000003', 65000.00),
+('ea000001-0000-0000-0000-000000000008', 'da000001-0000-0000-0000-000000000008', 'c2000004-0000-0000-0000-000000000004', 15000.00);
+
+-- REZERVASYONLAR (kontenjanları gerçekçi şekilde azalt)
+-- Önce kapasiteyi azaltalım (daha önceki seed'deki kapasitelere göre)
+UPDATE Events SET Capacity = 30 WHERE Event_ID = '77777777-7777-7777-7777-777777777777'; -- 50 idi, 20 rezervasyon var
+UPDATE Events SET Capacity = 3  WHERE Event_ID = 'd1111111-1111-1111-1111-111111111111'; -- 12 idi, 9 rezervasyon (neredeyse dolu)
+UPDATE Events SET Capacity = 7  WHERE Event_ID = 'd2222222-2222-2222-2222-222222222222'; -- 10 idi
+UPDATE Events SET Capacity = 8  WHERE Event_ID = 'd3333333-3333-3333-3333-333333333333'; -- 8 idi (boş)
+UPDATE Events SET Capacity = 35 WHERE Event_ID = 'd4444444-4444-4444-4444-444444444444'; -- 50 idi
+UPDATE Events SET Capacity = 0  WHERE Event_ID = 'd5555555-5555-5555-5555-555555555555'; -- 15 idi, DOLU
+
+INSERT INTO Reservations (Reservation_ID, User_ID, Event_ID, Participant_Count, Total_Price, Status) VALUES
+-- Osmanlı Sanat Tarihi Semineri (5 rezervasyon, 20 katılımcı)
+('fa000001-0000-0000-0000-000000000001', 'ba111111-aaaa-bbbb-cccc-111111111111', '77777777-7777-7777-7777-777777777777', 2, 300.00, 'Confirmed'),
+('fa000001-0000-0000-0000-000000000002', 'ba111111-aaaa-bbbb-cccc-222222222222', '77777777-7777-7777-7777-777777777777', 4, 600.00, 'Confirmed'),
+('fa000001-0000-0000-0000-000000000003', 'ba111111-aaaa-bbbb-cccc-333333333333', '77777777-7777-7777-7777-777777777777', 5, 750.00, 'Confirmed'),
+('fa000001-0000-0000-0000-000000000004', 'ba111111-aaaa-bbbb-cccc-444444444444', '77777777-7777-7777-7777-777777777777', 6, 900.00, 'Pending'),
+('fa000001-0000-0000-0000-000000000005', 'ba111111-aaaa-bbbb-cccc-555555555555', '77777777-7777-7777-7777-777777777777', 3, 450.00, 'Confirmed'),
+-- Yağlı Boya Atölyesi (3 rezervasyon, 9 katılımcı, doluya yakın)
+('fa000002-0000-0000-0000-000000000001', 'ba111111-aaaa-bbbb-cccc-666666666666', 'd1111111-1111-1111-1111-111111111111', 3, 1350.00, 'Confirmed'),
+('fa000002-0000-0000-0000-000000000002', 'ba111111-aaaa-bbbb-cccc-777777777777', 'd1111111-1111-1111-1111-111111111111', 4, 1800.00, 'Confirmed'),
+('fa000002-0000-0000-0000-000000000003', 'ba111111-aaaa-bbbb-cccc-888888888888', 'd1111111-1111-1111-1111-111111111111', 2, 900.00, 'Confirmed'),
+-- Suluboya Atölyesi (1 rezervasyon)
+('fa000003-0000-0000-0000-000000000001', 'ba111111-aaaa-bbbb-cccc-999999999999', 'd2222222-2222-2222-2222-222222222222', 3, 1140.00, 'Confirmed'),
+-- Çocuk Atölyesi DOLU (3 rezervasyon, 15 katılımcı)
+('fa000005-0000-0000-0000-000000000001', 'ba111111-aaaa-bbbb-cccc-aaaaaaaaaaaa', 'd5555555-5555-5555-5555-555555555555', 5, 1250.00, 'Confirmed'),
+('fa000005-0000-0000-0000-000000000002', 'ba111111-aaaa-bbbb-cccc-bbbbbbbbbbbb', 'd5555555-5555-5555-5555-555555555555', 6, 1500.00, 'Confirmed'),
+('fa000005-0000-0000-0000-000000000003', 'ba111111-aaaa-bbbb-cccc-cccccccccccc', 'd5555555-5555-5555-5555-555555555555', 4, 1000.00, 'Confirmed'),
+-- Sanat Tarihi Semineri (3 rezervasyon, 15 katılımcı)
+('fa000004-0000-0000-0000-000000000001', 'a4444444-4444-4444-4444-444444444444', 'd4444444-4444-4444-4444-444444444444', 5, 1000.00, 'Confirmed'),
+('fa000004-0000-0000-0000-000000000002', 'a5555555-5555-5555-5555-555555555555', 'd4444444-4444-4444-4444-444444444444', 8, 1600.00, 'Confirmed'),
+('fa000004-0000-0000-0000-000000000003', 'ba111111-aaaa-bbbb-cccc-111111111111', 'd4444444-4444-4444-4444-444444444444', 2, 400.00, 'Pending');
+
+-- FAVORİLER (30 favori ilişkisi, çeşitli kullanıcı-eser kombinasyonları)
+INSERT INTO Favorites (User_ID, Artwork_ID) VALUES
+-- Selin'in favorileri
+('ba111111-aaaa-bbbb-cccc-111111111111', 'c1000002-0000-0000-0000-000000000002'),
+('ba111111-aaaa-bbbb-cccc-111111111111', 'c3000001-0000-0000-0000-000000000001'),
+('ba111111-aaaa-bbbb-cccc-111111111111', '55555555-5555-5555-5555-555555555555'),
+-- Burak
+('ba111111-aaaa-bbbb-cccc-222222222222', 'c2000001-0000-0000-0000-000000000001'),
+('ba111111-aaaa-bbbb-cccc-222222222222', 'c3000001-0000-0000-0000-000000000001'),
+('ba111111-aaaa-bbbb-cccc-222222222222', 'c2000002-0000-0000-0000-000000000002'),
+-- Deniz
+('ba111111-aaaa-bbbb-cccc-333333333333', 'c3000002-0000-0000-0000-000000000002'),
+('ba111111-aaaa-bbbb-cccc-333333333333', 'c1000001-0000-0000-0000-000000000001'),
+-- Elif
+('ba111111-aaaa-bbbb-cccc-444444444444', 'c3000001-0000-0000-0000-000000000001'),
+('ba111111-aaaa-bbbb-cccc-444444444444', 'c1000002-0000-0000-0000-000000000002'),
+('ba111111-aaaa-bbbb-cccc-444444444444', '66666666-6666-6666-6666-666666666666'),
+-- Furkan
+('ba111111-aaaa-bbbb-cccc-555555555555', 'c2000003-0000-0000-0000-000000000003'),
+('ba111111-aaaa-bbbb-cccc-555555555555', 'c4000003-0000-0000-0000-000000000003'),
+-- Gizem
+('ba111111-aaaa-bbbb-cccc-666666666666', 'c1000002-0000-0000-0000-000000000002'),
+('ba111111-aaaa-bbbb-cccc-666666666666', 'c2000001-0000-0000-0000-000000000001'),
+-- Hakan
+('ba111111-aaaa-bbbb-cccc-777777777777', 'c3000001-0000-0000-0000-000000000001'),
+('ba111111-aaaa-bbbb-cccc-777777777777', '55555555-5555-5555-5555-555555555555'),
+-- Iraz
+('ba111111-aaaa-bbbb-cccc-888888888888', 'c1000003-0000-0000-0000-000000000003'),
+('ba111111-aaaa-bbbb-cccc-888888888888', 'c2000004-0000-0000-0000-000000000004'),
+-- Kerem
+('ba111111-aaaa-bbbb-cccc-999999999999', 'c3000002-0000-0000-0000-000000000002'),
+('ba111111-aaaa-bbbb-cccc-999999999999', 'c3000001-0000-0000-0000-000000000001'),
+-- Leyla
+('ba111111-aaaa-bbbb-cccc-aaaaaaaaaaaa', 'c1000002-0000-0000-0000-000000000002'),
+('ba111111-aaaa-bbbb-cccc-aaaaaaaaaaaa', 'c4000001-0000-0000-0000-000000000001'),
+-- Murat
+('ba111111-aaaa-bbbb-cccc-bbbbbbbbbbbb', 'c2000001-0000-0000-0000-000000000001'),
+('ba111111-aaaa-bbbb-cccc-bbbbbbbbbbbb', '66666666-6666-6666-6666-666666666666'),
+-- Nazlı
+('ba111111-aaaa-bbbb-cccc-cccccccccccc', 'c3000001-0000-0000-0000-000000000001'),
+-- Ayşe (önceki seed kullanıcısı)
+('a4444444-4444-4444-4444-444444444444', 'c1000002-0000-0000-0000-000000000002'),
+('a4444444-4444-4444-4444-444444444444', 'c2000001-0000-0000-0000-000000000001'),
+-- Mehmet (önceki)
+('a5555555-5555-5555-5555-555555555555', 'c3000001-0000-0000-0000-000000000001'),
+('a5555555-5555-5555-5555-555555555555', 'c1000001-0000-0000-0000-000000000001');
+
+-- KARŞILAŞTIRMA GEÇMİŞİ (5 adet)
+INSERT INTO Saved_Comparisons (Comparison_ID, User_ID, Comparison_Type, Items_Data, Title) VALUES
+('ca000001-0000-0000-0000-000000000001', 'ba111111-aaaa-bbbb-cccc-111111111111', 'Artwork', '{"items": ["c1000002-0000-0000-0000-000000000002", "c3000001-0000-0000-0000-000000000001"]}', 'İki Frida vs Yıldızlı Gece'),
+('ca000001-0000-0000-0000-000000000002', 'ba111111-aaaa-bbbb-cccc-222222222222', 'Artwork', '{"items": ["c2000001-0000-0000-0000-000000000001", "c2000002-0000-0000-0000-000000000002", "c2000003-0000-0000-0000-000000000003"]}', 'Picasso Karşılaştırması'),
+('ca000001-0000-0000-0000-000000000003', 'ba111111-aaaa-bbbb-cccc-333333333333', 'Event', '{"items": ["d1111111-1111-1111-1111-111111111111", "d2222222-2222-2222-2222-222222222222"]}', 'Yağlı vs Suluboya Atölyesi'),
+('ca000001-0000-0000-0000-000000000004', 'ba111111-aaaa-bbbb-cccc-444444444444', 'Artwork', '{"items": ["55555555-5555-5555-5555-555555555555", "66666666-6666-6666-6666-666666666666"]}', 'Osman Hamdi Bey Eserleri'),
+('ca000001-0000-0000-0000-000000000005', 'ba111111-aaaa-bbbb-cccc-555555555555', 'Artwork', '{"items": ["c3000001-0000-0000-0000-000000000001", "c3000002-0000-0000-0000-000000000002", "c3000003-0000-0000-0000-000000000003"]}', 'Van Gogh Üçlüsü');
+
+-- DESTEK TALEPLERİ (4 adet, çeşitli durumlarda)
+INSERT INTO Support_Tickets (Ticket_ID, User_ID, Subject, Status) VALUES
+('1a000001-0000-0000-0000-000000000001', 'ba111111-aaaa-bbbb-cccc-111111111111', 'Kargo takip numarası', 'Resolved'),
+('1a000001-0000-0000-0000-000000000002', 'ba111111-aaaa-bbbb-cccc-222222222222', 'Rezervasyon değişikliği talebi', 'Open'),
+('1a000001-0000-0000-0000-000000000003', 'ba111111-aaaa-bbbb-cccc-333333333333', 'Eser hakkında bilgi', 'Closed'),
+('1a000001-0000-0000-0000-000000000004', 'ba111111-aaaa-bbbb-cccc-444444444444', 'Ödeme sorunu', 'Open');
+
+-- TİCKET MESAJLARI
+INSERT INTO Ticket_Messages (Message_ID, Ticket_ID, Sender_ID, Message) VALUES
+('2a000001-0000-0000-0000-000000000001', '1a000001-0000-0000-0000-000000000001', 'ba111111-aaaa-bbbb-cccc-111111111111', 'Aldığım eserin kargo takip numarasını alabilir miyim?'),
+('2a000001-0000-0000-0000-000000000002', '1a000001-0000-0000-0000-000000000001', '11111111-1111-1111-1111-111111111111', 'Merhaba, takip numaranız: TR123456789. Yarın elinizde olacaktır.'),
+('2a000001-0000-0000-0000-000000000003', '1a000001-0000-0000-0000-000000000002', 'ba111111-aaaa-bbbb-cccc-222222222222', 'Hafta sonu atölyemi pazartesiye değiştirebilir miyim?'),
+('2a000001-0000-0000-0000-000000000004', '1a000001-0000-0000-0000-000000000003', 'ba111111-aaaa-bbbb-cccc-333333333333', 'Yıldızlı Gece eserinin orjinal boyutu nedir?'),
+('2a000001-0000-0000-0000-000000000005', '1a000001-0000-0000-0000-000000000003', '11111111-1111-1111-1111-111111111111', 'Boyut bilgisi 73x92 cm''dir. Detaylı bilgi için galeriyi ziyaret edebilirsiniz.'),
+('2a000001-0000-0000-0000-000000000006', '1a000001-0000-0000-0000-000000000004', 'ba111111-aaaa-bbbb-cccc-444444444444', 'Kredi kartı ödemem başarısız oldu, yardım edebilir misiniz?');
+
+-- EK KUPONLAR (Frontend test edebilsin diye)
+INSERT INTO Coupons (Coupon_ID, Code, Discount_Percent, Valid_Until, Target_User_ID, Is_Active) VALUES
+('e4444444-4444-4444-4444-444444444444', 'ATOLYE30', 30, '2026-12-31 23:59:59', NULL, TRUE),
+('e5555555-5555-5555-5555-555555555555', 'OZELGUN50', 50, '2026-06-30 23:59:59', NULL, TRUE),
+('e6666666-6666-6666-6666-666666666666', 'EXPIRED', 25, '2025-01-01 00:00:00', NULL, TRUE);
+
+
+-- ============================================================
+-- 20 EK SANAT ESERİ + İLGİLİ DATA (35+ esere çıkarmak için)
+-- ============================================================
+
+-- Frida Kahlo ek eserleri
+INSERT INTO Artworks (Artwork_ID, Artist_ID, Title, Description, Price, Category, Image_URL, Stock_Status, View_Count, Like_Count, Is_Campaign, Campaign_Discount_Percent) VALUES
+('c1100001-0000-0000-0000-000000000001', 'b1111111-1111-1111-1111-111111111111', 'Diego ve Ben', 'Sanatçının kocası Diego Rivera ile çift portresi.', 95000.00, 'Yağlı Boya', 'https://images.unsplash.com/photo-1578321272125-4e4c4c3643c5?w=800', 'Available', 178, 34, FALSE, 0),
+('c1100001-0000-0000-0000-000000000002', 'b1111111-1111-1111-1111-111111111111', 'Maymunlu Otoportre', 'Tropikal motiflerle bezeli sembolik bir kompozisyon.', 75000.00, 'Yağlı Boya', 'https://images.unsplash.com/photo-1579541591970-e5cf0a3a3d7e?w=800', 'Available', 145, 28, TRUE, 18),
+('c1100001-0000-0000-0000-000000000003', 'b1111111-1111-1111-1111-111111111111', 'Hayat Suyu', 'Akrilik teknikle yapılmış küçük ölçekli eser.', 22000.00, 'Akrilik', 'https://images.unsplash.com/photo-1547891654-e66ed7ebb968?w=800', 'Available', 89, 15, FALSE, 0),
+
+-- Pablo Picasso ek eserleri
+('c2200001-0000-0000-0000-000000000001', 'b2222222-2222-2222-2222-222222222222', 'Pembe Dönem Akrobatı', 'Picasso''nun pembe dönemine ait nadide çalışma.', 165000.00, 'Yağlı Boya', 'https://images.unsplash.com/photo-1549887534-1541e9326642?w=800', 'Available', 256, 48, FALSE, 0),
+('c2200001-0000-0000-0000-000000000002', 'b2222222-2222-2222-2222-222222222222', 'Soyut Yüz', 'Geç dönem soyut portre denemesi.', 88000.00, 'Karma Teknik', 'https://images.unsplash.com/photo-1502691876148-a84978e59af8?w=800', 'Available', 134, 26, TRUE, 12),
+('c2200001-0000-0000-0000-000000000003', 'b2222222-2222-2222-2222-222222222222', 'Seramik Tabak', 'El yapımı dekoratif seramik eser.', 18500.00, 'Heykel', 'https://images.unsplash.com/photo-1578926078187-398f3a3e4a59?w=800', 'Available', 67, 12, FALSE, 0),
+('c2200001-0000-0000-0000-000000000004', 'b2222222-2222-2222-2222-222222222222', 'Boğa Güreşi Eskizi', 'Çini mürekkep ile yapılmış eskiz.', 12000.00, 'Karma Teknik', 'https://images.unsplash.com/photo-1518998053901-5348d3961a04?w=800', 'Available', 92, 19, FALSE, 0),
+
+-- Vincent Van Gogh ek eserleri
+('c3300001-0000-0000-0000-000000000001', 'b3333333-3333-3333-3333-333333333333', 'Zambaklar', 'Hospital dönemi natürmort çalışması.', 155000.00, 'Yağlı Boya', 'https://images.unsplash.com/photo-1614102095300-9aaaab9b51e8?w=800', 'Available', 387, 82, TRUE, 20),
+('c3300001-0000-0000-0000-000000000002', 'b3333333-3333-3333-3333-333333333333', 'Kahve İçen Köylü', 'Hollanda dönemi portresi.', 92000.00, 'Yağlı Boya', 'https://images.unsplash.com/photo-1577720580479-7d839d829c73?w=800', 'Sold', 245, 51, FALSE, 0),
+('c3300001-0000-0000-0000-000000000003', 'b3333333-3333-3333-3333-333333333333', 'Servi Ağaçları', 'Provence manzaraları serisinden.', 135000.00, 'Yağlı Boya', 'https://images.unsplash.com/photo-1568667256549-094345857637?w=800', 'Available', 298, 63, FALSE, 0),
+('c3300001-0000-0000-0000-000000000004', 'b3333333-3333-3333-3333-333333333333', 'Kahve Köşesi Suluboya', 'Küçük boyutlu suluboya çalışması.', 18000.00, 'Suluboya', 'https://images.unsplash.com/photo-1513475382585-d06e58bcb0e0?w=800', 'Available', 78, 16, TRUE, 15),
+
+-- Osman Hamdi Bey ek eserleri
+('c4400001-0000-0000-0000-000000000001', '44444444-4444-4444-4444-444444444444', 'Kuran Okuyan Adam', 'Klasik Osmanlı dönemi içmekan tasviri.', 58000.00, 'Yağlı Boya', 'https://images.unsplash.com/photo-1571167530149-c1105da4c2c7?w=800', 'Available', 187, 35, FALSE, 0),
+('c4400001-0000-0000-0000-000000000002', '44444444-4444-4444-4444-444444444444', 'Sokak Köpekleri', 'Modern eskiz, sosyal hayat sahnesi.', 9500.00, 'Karma Teknik', 'https://images.unsplash.com/photo-1545830384-3a2061eb44ed?w=800', 'Available', 56, 11, TRUE, 25),
+('c4400001-0000-0000-0000-000000000003', '44444444-4444-4444-4444-444444444444', 'Heykel Etüdü', 'Tunç döküm küçük heykel.', 32000.00, 'Heykel', 'https://images.unsplash.com/photo-1597274303632-880ef8660375?w=800', 'Available', 134, 24, FALSE, 0),
+('c4400001-0000-0000-0000-000000000004', '44444444-4444-4444-4444-444444444444', 'Boğaz Manzarası', 'Suluboya teknikle İstanbul manzarası.', 14500.00, 'Suluboya', 'https://images.unsplash.com/photo-1507010444286-828ea71bfac7?w=800', 'Available', 95, 18, FALSE, 0),
+('c4400001-0000-0000-0000-000000000005', '44444444-4444-4444-4444-444444444444', 'Antik Çini Reprodüksiyon', 'El yapımı çini panel.', 6500.00, 'Heykel', 'https://images.unsplash.com/photo-1578926078187-398f3a3e4a59?w=800', 'Available', 42, 8, TRUE, 30),
+
+-- Daha uygun fiyatlı eserler (giriş seviyesi koleksiyoncular için)
+('c5500001-0000-0000-0000-000000000001', 'b1111111-1111-1111-1111-111111111111', 'Çiçekli Etüt', 'Küçük boyutlu Frida etüdü.', 4500.00, 'Akrilik', 'https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=800', 'Available', 38, 7, FALSE, 0),
+('c5500001-0000-0000-0000-000000000002', 'b2222222-2222-2222-2222-222222222222', 'Mini Picasso', 'Stil çalışması, sınırlı sayıda baskı.', 3800.00, 'Karma Teknik', 'https://images.unsplash.com/photo-1577083165633-14ebcdb0f658?w=800', 'Available', 52, 9, TRUE, 10),
+('c5500001-0000-0000-0000-000000000003', 'b3333333-3333-3333-3333-333333333333', 'Van Gogh Stil Eskiz', 'Post-empresyonist tarzda küçük çalışma.', 5200.00, 'Karma Teknik', 'https://images.unsplash.com/photo-1518518873111-6ca469aa4560?w=800', 'Available', 67, 13, FALSE, 0),
+('c5500001-0000-0000-0000-000000000004', '44444444-4444-4444-4444-444444444444', 'Karakalem Portre', 'Klasik tekniğinde karakalem çalışması.', 2800.00, 'Karma Teknik', 'https://images.unsplash.com/photo-1513364776144-60967b0f800f?w=800', 'Available', 28, 5, FALSE, 0);
+
+-- Yeni eserlere yorumlar
+INSERT INTO Reviews (Review_ID, User_ID, Target_ID, Target_Type, Rating, Comment_Text, Reply_Text, Replied_At, Helpful_Votes) VALUES
+('aa110001-0000-0000-0000-000000000001', 'ba111111-aaaa-bbbb-cccc-111111111111', 'c1100001-0000-0000-0000-000000000001', 'Artwork', 5, 'Çift portresi çok dokunaklı, sanat tarihinin önemli bir parçası.', NULL, NULL, 17),
+('aa110001-0000-0000-0000-000000000002', 'ba111111-aaaa-bbbb-cccc-222222222222', 'c1100001-0000-0000-0000-000000000001', 'Artwork', 4, 'Renkleri biraz daha doygun olabilirdi.', NULL, NULL, 5),
+('aa110002-0000-0000-0000-000000000001', 'ba111111-aaaa-bbbb-cccc-333333333333', 'c1100001-0000-0000-0000-000000000002', 'Artwork', 5, 'Tropikal sembolizm Frida''ya çok yakışıyor.', 'İlginiz için teşekkürler.', '2026-05-04 13:00:00', 21),
+('aa110003-0000-0000-0000-000000000001', 'ba111111-aaaa-bbbb-cccc-444444444444', 'c2200001-0000-0000-0000-000000000001', 'Artwork', 5, 'Pembe dönem hayranlarına müthiş bir parça.', NULL, NULL, 28),
+('aa110003-0000-0000-0000-000000000002', 'ba111111-aaaa-bbbb-cccc-555555555555', 'c2200001-0000-0000-0000-000000000001', 'Artwork', 4, 'Pahalı ama Picasso için makul.', NULL, NULL, 14),
+('aa110004-0000-0000-0000-000000000001', 'ba111111-aaaa-bbbb-cccc-666666666666', 'c2200001-0000-0000-0000-000000000003', 'Artwork', 5, 'El yapımı seramik kalitesi mükemmel.', NULL, NULL, 9),
+('aa110005-0000-0000-0000-000000000001', 'ba111111-aaaa-bbbb-cccc-777777777777', 'c3300001-0000-0000-0000-000000000001', 'Artwork', 5, 'Zambaklar tablosu odamı ışıklandırdı.', NULL, NULL, 33),
+('aa110005-0000-0000-0000-000000000002', 'ba111111-aaaa-bbbb-cccc-888888888888', 'c3300001-0000-0000-0000-000000000001', 'Artwork', 5, 'Van Gogh sevenler kaçırmasın.', 'Tebrikler, eserin yeni sahibine kavuşması güzel.', '2026-05-06 09:30:00', 26),
+('aa110006-0000-0000-0000-000000000001', 'ba111111-aaaa-bbbb-cccc-999999999999', 'c3300001-0000-0000-0000-000000000003', 'Artwork', 4, 'Servi ağaçları manzarası huzur veriyor.', NULL, NULL, 12),
+('aa110007-0000-0000-0000-000000000001', 'ba111111-aaaa-bbbb-cccc-aaaaaaaaaaaa', 'c4400001-0000-0000-0000-000000000001', 'Artwork', 5, 'Osmanlı içmekan tasviri muhteşem.', NULL, NULL, 15),
+('aa110008-0000-0000-0000-000000000001', 'ba111111-aaaa-bbbb-cccc-bbbbbbbbbbbb', 'c4400001-0000-0000-0000-000000000004', 'Artwork', 5, 'Boğaz manzarası suluboya tekniğinde çok başarılı.', NULL, NULL, 11),
+('aa110009-0000-0000-0000-000000000001', 'ba111111-aaaa-bbbb-cccc-cccccccccccc', 'c5500001-0000-0000-0000-000000000003', 'Artwork', 4, 'Uygun fiyatlı, başlangıç koleksiyonu için ideal.', NULL, NULL, 7);
+
+-- Yeni eserlere favoriler
+INSERT INTO Favorites (User_ID, Artwork_ID) VALUES
+('ba111111-aaaa-bbbb-cccc-111111111111', 'c1100001-0000-0000-0000-000000000001'),
+('ba111111-aaaa-bbbb-cccc-222222222222', 'c2200001-0000-0000-0000-000000000001'),
+('ba111111-aaaa-bbbb-cccc-333333333333', 'c3300001-0000-0000-0000-000000000001'),
+('ba111111-aaaa-bbbb-cccc-444444444444', 'c1100001-0000-0000-0000-000000000002'),
+('ba111111-aaaa-bbbb-cccc-555555555555', 'c2200001-0000-0000-0000-000000000003'),
+('ba111111-aaaa-bbbb-cccc-666666666666', 'c4400001-0000-0000-0000-000000000001'),
+('ba111111-aaaa-bbbb-cccc-777777777777', 'c3300001-0000-0000-0000-000000000003'),
+('ba111111-aaaa-bbbb-cccc-888888888888', 'c4400001-0000-0000-0000-000000000004'),
+('ba111111-aaaa-bbbb-cccc-999999999999', 'c5500001-0000-0000-0000-000000000001'),
+('ba111111-aaaa-bbbb-cccc-aaaaaaaaaaaa', 'c5500001-0000-0000-0000-000000000003');
