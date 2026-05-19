@@ -235,7 +235,7 @@ export default function ArtworkDetail() {
         targetId: artwork.artwork_id,
         targetType: "Artwork",
         rating: newRating,
-        commentText: newComment,
+        comment_text: newComment,
       });
       toast.success("Değerlendirmeniz eklendi!");
       // Yorumları yeniden çek

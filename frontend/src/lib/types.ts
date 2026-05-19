@@ -48,7 +48,7 @@ export interface Review {
   user_id: string;
   target_id: string;
   rating: number;
-  comment: string;
+  comment_text: string;
   helpful_count?: number;
   artist_reply?: string | null;
   artist_reply_date?: string | null;
