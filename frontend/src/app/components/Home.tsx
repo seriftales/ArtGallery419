@@ -1,42 +1,73 @@
-import { useEffect, useState } from "react";
 import { Link } from "react-router";
-import { ArrowRight, Calendar, Star, Sparkles, Award } from "lucide-react";
+import { ArrowRight, Calendar, Star, Sparkles, TrendingUp, Award } from "lucide-react";
 import { ImageWithFallback } from "./figma/ImageWithFallback";
-import { api } from "../../lib/api";
-import type { ApiList, Artwork, ArtEvent } from "../../lib/types";
-import { formatPrice, resolveImage } from "../../lib/formatters";
 
 export default function Home() {
-  const [featuredArtworks, setFeaturedArtworks] = useState<Artwork[]>([]);
-  const [upcomingWorkshops, setUpcomingWorkshops] = useState<ArtEvent[]>([]);
-  const [loading, setLoading] = useState(true);
+  const featuredArtworks = [
+    {
+      id: 1,
+      image: "https://images.unsplash.com/photo-1606819717115-9159c900370b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=800",
+      title: "Renklerin Dansı",
+      artist: "Ayşe Demir",
+      price: "15000",
+      rating: 4.8,
+      reviews: 24
+    },
+    {
+      id: 2,
+      image: "https://images.unsplash.com/photo-1545830384-3a2061eb44ed?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=800",
+      title: "Düşüncenin Formu",
+      artist: "Can Öztürk",
+      price: "22000",
+      rating: 4.9,
+      reviews: 31
+    },
+    {
+      id: 3,
+      image: "https://images.unsplash.com/photo-1768212561364-bedf52776510?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=800",
+      title: "Soyut Harmony",
+      artist: "Elif Arslan",
+      price: "18500",
+      rating: 4.7,
+      reviews: 19
+    }
+  ];
 
-  useEffect(() => {
-    let cancelled = false;
-
-    const load = async () => {
-      try {
-        const [artworksRes, eventsRes] = await Promise.all([
-          api.get<ApiList<Artwork>>("/artworks", { skipAuth: true }),
-          api.get<ApiList<ArtEvent>>("/events", { skipAuth: true }),
-        ]);
-
-        if (cancelled) return;
-        setFeaturedArtworks(artworksRes.data.slice(0, 3));
-        setUpcomingWorkshops(eventsRes.data.slice(0, 3));
-      } catch (err) {
-        // Sessiz başarısızlık: sayfa yine açılmalı, sadece sekmeler boş kalır
-        console.error("Home verisi yüklenemedi:", err);
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    };
-
-    load();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+  const upcomingWorkshops = [
+    {
+      id: 1,
+      image: "https://images.unsplash.com/photo-1541753866388-0b3c701627d3?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=800",
+      title: "Yağlı Boya Teknikleri",
+      date: "2026-05-20",
+      time: "14:00",
+      duration: "3 saat",
+      price: "450",
+      spots: 8,
+      maxSpots: 12
+    },
+    {
+      id: 2,
+      image: "https://images.unsplash.com/photo-1507010444286-828ea71bfac7?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=800",
+      title: "Suluboya ile Manzara",
+      date: "2026-05-22",
+      time: "10:00",
+      duration: "4 saat",
+      price: "380",
+      spots: 5,
+      maxSpots: 10
+    },
+    {
+      id: 3,
+      image: "https://images.unsplash.com/photo-1597274303632-880ef8660375?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=800",
+      title: "Modern Heykel Atölyesi",
+      date: "2026-05-25",
+      time: "13:00",
+      duration: "5 saat",
+      price: "600",
+      spots: 3,
+      maxSpots: 8
+    }
+  ];
 
   return (
     <div className="min-h-screen">
@@ -83,6 +114,7 @@ export default function Home() {
           </div>
         </div>
 
+        {/* Scroll indicator */}
         <div className="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce">
           <div className="w-6 h-10 border-2 border-white/30 rounded-full flex justify-center p-2">
             <div className="w-1 h-3 bg-white/50 rounded-full" />
@@ -135,52 +167,33 @@ export default function Home() {
             </Link>
           </div>
 
-          {loading ? (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              {[1, 2, 3].map((i) => (
-                <div key={i} className="animate-pulse">
-                  <div className="aspect-[4/5] bg-muted rounded-2xl mb-4" />
-                  <div className="h-6 bg-muted rounded w-3/4 mb-2" />
-                  <div className="h-4 bg-muted rounded w-1/2 mb-2" />
-                  <div className="h-5 bg-muted rounded w-1/3" />
-                </div>
-              ))}
-            </div>
-          ) : featuredArtworks.length === 0 ? (
-            <p className="text-center text-muted-foreground py-12 font-light">
-              Henüz eser bulunmuyor.
-            </p>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              {featuredArtworks.map((artwork) => (
-                <Link
-                  key={artwork.artwork_id}
-                  to={`/artworks/${artwork.artwork_id}`}
-                  className="group"
-                >
-                  <div className="relative overflow-hidden rounded-2xl mb-4 aspect-[4/5] bg-muted">
-                    <ImageWithFallback
-                      src={resolveImage(artwork.image_url)}
-                      alt={artwork.title}
-                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                    {artwork.like_count !== undefined && artwork.like_count > 0 && (
-                      <div className="absolute bottom-4 left-4 right-4 translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300">
-                        <div className="flex items-center space-x-2 text-white">
-                          <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                          <span className="text-sm">{artwork.like_count} beğeni</span>
-                        </div>
-                      </div>
-                    )}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {featuredArtworks.map((artwork) => (
+              <Link
+                key={artwork.id}
+                to={`/artworks/${artwork.id}`}
+                className="group"
+              >
+                <div className="relative overflow-hidden rounded-2xl mb-4 aspect-[4/5] bg-muted">
+                  <ImageWithFallback
+                    src={artwork.image}
+                    alt={artwork.title}
+                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                  <div className="absolute bottom-4 left-4 right-4 translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300">
+                    <div className="flex items-center space-x-2 text-white">
+                      <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                      <span className="text-sm">{artwork.rating} ({artwork.reviews} değerlendirme)</span>
+                    </div>
                   </div>
-                  <h3 className="text-2xl mb-2 font-light group-hover:text-primary transition-colors">{artwork.title}</h3>
-                  <p className="text-muted-foreground mb-2 font-light">{artwork.artist_name || "Bilinmeyen sanatçı"}</p>
-                  <p className="text-xl font-medium">{formatPrice(artwork.price)}</p>
-                </Link>
-              ))}
-            </div>
-          )}
+                </div>
+                <h3 className="text-2xl mb-2 font-light group-hover:text-primary transition-colors">{artwork.title}</h3>
+                <p className="text-muted-foreground mb-2 font-light">{artwork.artist}</p>
+                <p className="text-xl font-medium">₺{artwork.price}</p>
+              </Link>
+            ))}
+          </div>
         </div>
       </section>
 
@@ -205,59 +218,41 @@ export default function Home() {
             </Link>
           </div>
 
-          {loading ? (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              {[1, 2, 3].map((i) => (
-                <div key={i} className="animate-pulse bg-background border border-border rounded-2xl overflow-hidden">
-                  <div className="h-56 bg-muted" />
-                  <div className="p-6">
-                    <div className="h-6 bg-muted rounded w-3/4 mb-3" />
-                    <div className="h-4 bg-muted rounded w-1/2 mb-2" />
-                    <div className="h-4 bg-muted rounded w-1/3" />
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {upcomingWorkshops.map((workshop) => (
+              <Link
+                key={workshop.id}
+                to={`/workshops/${workshop.id}`}
+                className="group bg-background border border-border rounded-2xl overflow-hidden hover:shadow-2xl hover:shadow-primary/10 transition-all duration-300 hover:-translate-y-2"
+              >
+                <div className="relative h-56 overflow-hidden">
+                  <ImageWithFallback
+                    src={workshop.image}
+                    alt={workshop.title}
+                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                  />
+                  <div className="absolute top-4 right-4 bg-primary/90 backdrop-blur-sm text-primary-foreground px-4 py-2 rounded-full text-sm font-medium">
+                    {workshop.spots} Kontenjan
                   </div>
                 </div>
-              ))}
-            </div>
-          ) : upcomingWorkshops.length === 0 ? (
-            <p className="text-center text-muted-foreground py-12 font-light">
-              Yaklaşan atölye bulunmuyor.
-            </p>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              {upcomingWorkshops.map((workshop) => (
-                <Link
-                  key={workshop.event_id}
-                  to={`/workshops/${workshop.event_id}`}
-                  className="group bg-background border border-border rounded-2xl overflow-hidden hover:shadow-2xl hover:shadow-primary/10 transition-all duration-300 hover:-translate-y-2"
-                >
-                  <div className="relative h-56 overflow-hidden">
-                    <ImageWithFallback
-                      src={resolveImage(workshop.image_url, "https://images.unsplash.com/photo-1541753866388-0b3c701627d3?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=800")}
-                      alt={workshop.title}
-                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
-                    />
-                    <div className="absolute top-4 right-4 bg-primary/90 backdrop-blur-sm text-primary-foreground px-4 py-2 rounded-full text-sm font-medium">
-                      {workshop.capacity} Kontenjan
-                    </div>
+                <div className="p-6">
+                  <h3 className="text-2xl mb-3 font-light group-hover:text-primary transition-colors">{workshop.title}</h3>
+                  <div className="space-y-2 text-sm text-muted-foreground mb-4 font-light">
+                    <p>📅 {new Date(workshop.date).toLocaleDateString('tr-TR')} · {workshop.time}</p>
+                    <p>⏱️ {workshop.duration}</p>
+                    <p>👥 {workshop.spots}/{workshop.maxSpots} kişi</p>
                   </div>
-                  <div className="p-6">
-                    <h3 className="text-2xl mb-3 font-light group-hover:text-primary transition-colors">{workshop.title}</h3>
-                    <div className="space-y-2 text-sm text-muted-foreground mb-4 font-light">
-                      <p>📅 {new Date(workshop.date).toLocaleDateString('tr-TR')} · {workshop.time?.slice(0, 5)}</p>
-                      <p>👥 {workshop.capacity} kişi kapasite</p>
-                    </div>
-                    <div className="flex justify-between items-center pt-4 border-t border-border">
-                      <p className="text-2xl font-medium">{formatPrice(workshop.price)}</p>
-                      <span className="text-primary group-hover:underline flex items-center space-x-1">
-                        <span>Rezervasyon</span>
-                        <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                      </span>
-                    </div>
+                  <div className="flex justify-between items-center pt-4 border-t border-border">
+                    <p className="text-2xl font-medium">₺{workshop.price}</p>
+                    <span className="text-primary group-hover:underline flex items-center space-x-1">
+                      <span>Rezervasyon</span>
+                      <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                    </span>
                   </div>
-                </Link>
-              ))}
-            </div>
-          )}
+                </div>
+              </Link>
+            ))}
+          </div>
         </div>
       </section>
 

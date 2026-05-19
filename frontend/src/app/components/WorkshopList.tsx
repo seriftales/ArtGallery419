@@ -1,79 +1,201 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router";
-import { Calendar, Users, Search, SlidersHorizontal, X } from "lucide-react";
-import { toast } from "sonner";
+import { Calendar, Clock, Users, Search, SlidersHorizontal, Star, MapPin, X } from "lucide-react";
 import { ImageWithFallback } from "./figma/ImageWithFallback";
-import { api } from "../../lib/api";
-import type { ApiList, ArtEvent } from "../../lib/types";
-import { parsePrice, formatPrice, resolveImage } from "../../lib/formatters";
+
+const WORKSHOPS_DATA = [
+  {
+    id: 1,
+    image: "https://images.unsplash.com/photo-1541753866388-0b3c701627d3?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=800",
+    title: "Yağlı Boya Teknikleri",
+    instructor: "Ayşe Demir",
+    description: "Klasik ve modern yağlı boya tekniklerini öğrenin",
+    date: "2026-05-20",
+    time: "14:00",
+    duration: "3 saat",
+    price: 450,
+    spots: 8,
+    maxSpots: 12,
+    level: "Başlangıç",
+    category: "Resim",
+    rating: 4.9,
+    reviews: 45,
+    location: "Kadıköy Atölyesi"
+  },
+  {
+    id: 2,
+    image: "https://images.unsplash.com/photo-1507010444286-828ea71bfac7?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=800",
+    title: "Suluboya ile Manzara",
+    instructor: "Mehmet Yılmaz",
+    description: "Suluboya teknikleriyle etkileyici manzaralar yaratın",
+    date: "2026-05-22",
+    time: "10:00",
+    duration: "4 saat",
+    price: 380,
+    spots: 5,
+    maxSpots: 10,
+    level: "Orta",
+    category: "Resim",
+    rating: 4.7,
+    reviews: 32,
+    location: "Beşiktaş Atölyesi"
+  },
+  {
+    id: 3,
+    image: "https://images.unsplash.com/photo-1597274303632-880ef8660375?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=800",
+    title: "Modern Heykel Atölyesi",
+    instructor: "Can Öztürk",
+    description: "Çağdaş heykel sanatının temellerini keşfedin",
+    date: "2026-05-25",
+    time: "13:00",
+    duration: "5 saat",
+    price: 600,
+    spots: 3,
+    maxSpots: 8,
+    level: "İleri",
+    category: "Heykel",
+    rating: 4.8,
+    reviews: 28,
+    location: "Kadıköy Atölyesi"
+  },
+  {
+    id: 4,
+    image: "https://images.unsplash.com/photo-1513364776144-60967b0f800f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=800",
+    title: "Portre Çizimi",
+    instructor: "Zeynep Kaya",
+    description: "İnsan yüzü anatomisi ve portre teknikleri",
+    date: "2026-05-27",
+    time: "15:00",
+    duration: "4 saat",
+    price: 420,
+    spots: 6,
+    maxSpots: 10,
+    level: "Orta",
+    category: "Resim",
+    rating: 4.9,
+    reviews: 38,
+    location: "Beşiktaş Atölyesi"
+  },
+  {
+    id: 5,
+    image: "https://images.unsplash.com/photo-1578926078187-398f3a3e4a59?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=800",
+    title: "Seramik Sanatı",
+    instructor: "Elif Yıldız",
+    description: "Çömlekçi çarkı ile seramik yapımı",
+    date: "2026-05-29",
+    time: "11:00",
+    duration: "6 saat",
+    price: 550,
+    spots: 4,
+    maxSpots: 8,
+    level: "Başlangıç",
+    category: "Seramik",
+    rating: 4.8,
+    reviews: 42,
+    location: "Kadıköy Atölyesi"
+  },
+  {
+    id: 6,
+    image: "https://images.unsplash.com/photo-1452587925148-ce544e77e70d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=800",
+    title: "Dijital Fotoğraf",
+    instructor: "Murat Demir",
+    description: "DSLR kamera kullanımı ve kompozisyon",
+    date: "2026-06-01",
+    time: "09:00",
+    duration: "5 saat",
+    price: 480,
+    spots: 7,
+    maxSpots: 12,
+    level: "Başlangıç",
+    category: "Fotoğraf",
+    rating: 4.7,
+    reviews: 36,
+    location: "Beşiktaş Atölyesi"
+  },
+  {
+    id: 7,
+    image: "https://images.unsplash.com/photo-1460661419201-fd4cecdf8a8b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=800",
+    title: "Akrilik Soyut Sanat",
+    instructor: "Ayşe Demir",
+    description: "Soyut resim teknikleri ve renk teorisi",
+    date: "2026-06-03",
+    time: "13:00",
+    duration: "4 saat",
+    price: 460,
+    spots: 9,
+    maxSpots: 12,
+    level: "Orta",
+    category: "Resim",
+    rating: 4.8,
+    reviews: 29,
+    location: "Kadıköy Atölyesi"
+  },
+  {
+    id: 8,
+    image: "https://images.unsplash.com/photo-1515542622106-78bda8ba0e5b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=800",
+    title: "Kaligrafi Sanatı",
+    instructor: "Hasan Yılmaz",
+    description: "Geleneksel hat sanatı ve modern kaligrafi",
+    date: "2026-06-05",
+    time: "14:00",
+    duration: "3 saat",
+    price: 320,
+    spots: 10,
+    maxSpots: 15,
+    level: "Başlangıç",
+    category: "Resim",
+    rating: 4.9,
+    reviews: 51,
+    location: "Beşiktaş Atölyesi"
+  }
+];
 
 export default function WorkshopList() {
-  const [workshops, setWorkshops] = useState<ArtEvent[]>([]);
-  const [filteredWorkshops, setFilteredWorkshops] = useState<ArtEvent[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [workshops] = useState(WORKSHOPS_DATA);
+  const [filteredWorkshops, setFilteredWorkshops] = useState(WORKSHOPS_DATA);
   const [searchTerm, setSearchTerm] = useState("");
   const [showFilters, setShowFilters] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState<string>("all");
+  const [selectedLevel, setSelectedLevel] = useState<string>("all");
   const [priceRange, setPriceRange] = useState<string>("all");
-  const [sortBy, setSortBy] = useState<string>("date-asc");
 
-  useEffect(() => {
-    let cancelled = false;
-    const load = async () => {
-      try {
-        const res = await api.get<ApiList<ArtEvent>>("/events", { skipAuth: true });
-        if (cancelled) return;
-        setWorkshops(res.data);
-      } catch (err) {
-        console.error("Atölyeler yüklenemedi:", err);
-        toast.error("Atölyeler yüklenemedi");
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    };
-    load();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
+  // Apply filters
   useEffect(() => {
     let filtered = [...workshops];
 
     if (searchTerm) {
-      const q = searchTerm.toLowerCase();
-      filtered = filtered.filter(
-        (w) =>
-          w.title.toLowerCase().includes(q) ||
-          (w.description?.toLowerCase().includes(q) ?? false)
+      filtered = filtered.filter(w =>
+        w.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        w.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        w.instructor.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
 
-    if (priceRange !== "all") {
-      filtered = filtered.filter((w) => {
-        const p = parsePrice(w.price);
-        if (priceRange === "0-300") return p <= 300;
-        if (priceRange === "300-500") return p > 300 && p <= 500;
-        if (priceRange === "500+") return p > 500;
-        return true;
-      });
+    if (selectedCategory !== "all") {
+      filtered = filtered.filter(w => w.category === selectedCategory);
     }
 
-    if (sortBy === "date-asc") {
-      filtered.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-    } else if (sortBy === "date-desc") {
-      filtered.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-    } else if (sortBy === "price-low") {
-      filtered.sort((a, b) => parsePrice(a.price) - parsePrice(b.price));
-    } else if (sortBy === "price-high") {
-      filtered.sort((a, b) => parsePrice(b.price) - parsePrice(a.price));
+    if (selectedLevel !== "all") {
+      filtered = filtered.filter(w => w.level === selectedLevel);
+    }
+
+    if (priceRange !== "all") {
+      if (priceRange === "0-300") {
+        filtered = filtered.filter(w => w.price <= 300);
+      } else if (priceRange === "300-500") {
+        filtered = filtered.filter(w => w.price > 300 && w.price <= 500);
+      } else if (priceRange === "500+") {
+        filtered = filtered.filter(w => w.price > 500);
+      }
     }
 
     setFilteredWorkshops(filtered);
-  }, [searchTerm, priceRange, sortBy, workshops]);
+  }, [searchTerm, selectedCategory, selectedLevel, priceRange, workshops]);
 
   const resetFilters = () => {
+    setSelectedCategory("all");
+    setSelectedLevel("all");
     setPriceRange("all");
-    setSortBy("date-asc");
     setSearchTerm("");
   };
 
@@ -85,9 +207,7 @@ export default function WorkshopList() {
             <Calendar className="w-10 h-10 text-primary" />
             <h1 className="text-6xl font-light">Atölye ve Etkinlikler</h1>
           </div>
-          <p className="text-muted-foreground text-lg font-light">
-            {loading ? "Yükleniyor..." : `${filteredWorkshops.length} atölye bulundu`}
-          </p>
+          <p className="text-muted-foreground text-lg font-light">{filteredWorkshops.length} atölye bulundu</p>
         </div>
 
         <div className="mb-8 space-y-4">
@@ -123,7 +243,36 @@ export default function WorkshopList() {
                 </button>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div>
+                  <label className="block mb-2 text-sm font-light">Kategori</label>
+                  <select
+                    value={selectedCategory}
+                    onChange={(e) => setSelectedCategory(e.target.value)}
+                    className="w-full px-4 py-3 bg-background border border-border/50 rounded-2xl focus:outline-none focus:ring-2 focus:ring-primary/50"
+                  >
+                    <option value="all">Tümü</option>
+                    <option value="Resim">Resim</option>
+                    <option value="Heykel">Heykel</option>
+                    <option value="Seramik">Seramik</option>
+                    <option value="Fotoğraf">Fotoğraf</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block mb-2 text-sm font-light">Seviye</label>
+                  <select
+                    value={selectedLevel}
+                    onChange={(e) => setSelectedLevel(e.target.value)}
+                    className="w-full px-4 py-3 bg-background border border-border/50 rounded-2xl focus:outline-none focus:ring-2 focus:ring-primary/50"
+                  >
+                    <option value="all">Tümü</option>
+                    <option value="Başlangıç">Başlangıç</option>
+                    <option value="Orta">Orta</option>
+                    <option value="İleri">İleri</option>
+                  </select>
+                </div>
+
                 <div>
                   <label className="block mb-2 text-sm font-light">Fiyat Aralığı</label>
                   <select
@@ -135,20 +284,6 @@ export default function WorkshopList() {
                     <option value="0-300">₺0 - ₺300</option>
                     <option value="300-500">₺300 - ₺500</option>
                     <option value="500+">₺500+</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block mb-2 text-sm font-light">Sıralama</label>
-                  <select
-                    value={sortBy}
-                    onChange={(e) => setSortBy(e.target.value)}
-                    className="w-full px-4 py-3 bg-background border border-border/50 rounded-2xl focus:outline-none focus:ring-2 focus:ring-primary/50"
-                  >
-                    <option value="date-asc">Tarih (Yakın → Uzak)</option>
-                    <option value="date-desc">Tarih (Uzak → Yakın)</option>
-                    <option value="price-low">Fiyat (Düşük)</option>
-                    <option value="price-high">Fiyat (Yüksek)</option>
                   </select>
                 </div>
               </div>
@@ -165,72 +300,61 @@ export default function WorkshopList() {
           )}
         </div>
 
-        {loading ? (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            {[1, 2].map((i) => (
-              <div key={i} className="animate-pulse bg-background border border-border/50 rounded-2xl overflow-hidden">
-                <div className="h-64 bg-muted" />
-                <div className="p-6 space-y-3">
-                  <div className="h-6 bg-muted rounded w-3/4" />
-                  <div className="h-4 bg-muted rounded w-full" />
-                  <div className="h-4 bg-muted rounded w-1/2" />
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          {filteredWorkshops.map((workshop) => (
+            <Link
+              key={workshop.id}
+              to={`/workshops/${workshop.id}`}
+              className="group bg-background border border-border/50 rounded-2xl overflow-hidden hover:shadow-2xl hover:shadow-primary/10 transition-all duration-300 hover:-translate-y-1"
+            >
+              <div className="relative h-64 overflow-hidden">
+                <ImageWithFallback
+                  src={workshop.image}
+                  alt={workshop.title}
+                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                />
+                <div className="absolute top-4 right-4 bg-primary/90 backdrop-blur-sm text-primary-foreground px-4 py-2 rounded-full text-sm font-medium">
+                  {workshop.spots} Kontenjan
+                </div>
+                <div className="absolute top-4 left-4 bg-background/90 backdrop-blur-sm px-3 py-1 rounded-full text-sm">
+                  {workshop.level}
                 </div>
               </div>
-            ))}
-          </div>
-        ) : filteredWorkshops.length === 0 ? (
-          <div className="text-center py-20">
-            <p className="text-3xl text-muted-foreground mb-4 font-light">Atölye bulunamadı</p>
-            <p className="text-muted-foreground font-light">Lütfen farklı filtreler deneyin</p>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            {filteredWorkshops.map((workshop) => (
-              <Link
-                key={workshop.event_id}
-                to={`/workshops/${workshop.event_id}`}
-                className="group bg-background border border-border/50 rounded-2xl overflow-hidden hover:shadow-2xl hover:shadow-primary/10 transition-all duration-300 hover:-translate-y-1"
-              >
-                <div className="relative h-64 overflow-hidden">
-                  <ImageWithFallback
-                    src={resolveImage(workshop.image_url, "https://images.unsplash.com/photo-1541753866388-0b3c701627d3?w=800")}
-                    alt={workshop.title}
-                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
-                  />
-                  <div className="absolute top-4 right-4 bg-primary/90 backdrop-blur-sm text-primary-foreground px-4 py-2 rounded-full text-sm font-medium">
-                    {workshop.capacity} Kontenjan
-                  </div>
+
+              <div className="p-6">
+                <h3 className="text-2xl mb-3 font-light group-hover:text-primary transition-colors">{workshop.title}</h3>
+                <p className="text-sm text-muted-foreground mb-4 font-light line-clamp-2">{workshop.description}</p>
+
+                <div className="space-y-2 mb-4 text-sm text-muted-foreground">
+                  <p className="flex items-center space-x-2">
+                    <Calendar className="w-4 h-4" />
+                    <span>{new Date(workshop.date).toLocaleDateString('tr-TR')} · {workshop.time}</span>
+                  </p>
+                  <p className="flex items-center space-x-2">
+                    <Clock className="w-4 h-4" />
+                    <span>{workshop.duration}</span>
+                  </p>
+                  <p className="flex items-center space-x-2">
+                    <Users className="w-4 h-4" />
+                    <span>{workshop.spots}/{workshop.maxSpots} kişi</span>
+                  </p>
+                  <p className="flex items-center space-x-2">
+                    <MapPin className="w-4 h-4" />
+                    <span>{workshop.location}</span>
+                  </p>
                 </div>
 
-                <div className="p-6">
-                  <h3 className="text-2xl mb-3 font-light group-hover:text-primary transition-colors">{workshop.title}</h3>
-                  {workshop.description && (
-                    <p className="text-sm text-muted-foreground mb-4 font-light line-clamp-2">{workshop.description}</p>
-                  )}
-
-                  <div className="space-y-2 mb-4 text-sm text-muted-foreground">
-                    <p className="flex items-center space-x-2">
-                      <Calendar className="w-4 h-4" />
-                      <span>
-                        {new Date(workshop.date).toLocaleDateString("tr-TR")}
-                        {workshop.time ? ` · ${workshop.time.slice(0, 5)}` : ""}
-                      </span>
-                    </p>
-                    <p className="flex items-center space-x-2">
-                      <Users className="w-4 h-4" />
-                      <span>{workshop.capacity} kişi kapasite</span>
-                    </p>
-                  </div>
-
-                  <div className="flex items-center justify-between pt-4 border-t border-border/50">
-                    <div className="text-2xl font-medium">{formatPrice(workshop.price)}</div>
-                    <span className="text-primary group-hover:underline text-sm">Detay →</span>
+                <div className="flex items-center justify-between pt-4 border-t border-border/50">
+                  <div className="text-2xl font-medium">₺{workshop.price}</div>
+                  <div className="flex items-center space-x-1 text-sm text-muted-foreground">
+                    <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                    <span>{workshop.rating}</span>
                   </div>
                 </div>
-              </Link>
-            ))}
-          </div>
-        )}
+              </div>
+            </Link>
+          ))}
+        </div>
       </div>
     </div>
   );

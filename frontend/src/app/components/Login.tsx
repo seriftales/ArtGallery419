@@ -2,22 +2,9 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router";
 import { Mail, Lock, Eye, EyeOff, Sparkles } from "lucide-react";
 import { toast } from "sonner";
-import { api, ApiError } from "../../lib/api";
-import { auth } from "../../lib/auth";
 
 interface LoginProps {
   setIsLoggedIn: (value: boolean) => void;
-}
-
-// Backend /api/auth/login response tipi
-interface LoginResponse {
-  message: string;
-  token: string;
-  user: {
-    id: string;
-    firstName: string;
-    role: "Customer" | "Admin" | "Artist" | string;
-  };
 }
 
 export default function Login({ setIsLoggedIn }: LoginProps) {
@@ -27,9 +14,8 @@ export default function Login({ setIsLoggedIn }: LoginProps) {
     password: ""
   });
   const [showPassword, setShowPassword] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!formData.email || !formData.password) {
@@ -37,40 +23,40 @@ export default function Login({ setIsLoggedIn }: LoginProps) {
       return;
     }
 
-    setIsSubmitting(true);
-    try {
-      const data = await api.post<LoginResponse>(
-        "/auth/login",
-        { email: formData.email, password: formData.password },
-        { skipAuth: true }
+    // Demo hesaplar
+    const demoAccounts = [
+      { email: "user@artgallery419.com", password: "user123", role: "user", name: "Demo Kullanıcı" },
+      { email: "artist@artgallery419.com", password: "artist123", role: "artist", name: "Ayşe Demir" },
+      { email: "admin@artgallery419.com", password: "admin123", role: "admin", name: "Demo Admin" }
+    ];
+
+    const users = JSON.parse(localStorage.getItem("users") || "[]");
+    let user = users.find(
+      (u: any) => u.email === formData.email && u.password === formData.password
+    );
+
+    // Demo hesap kontrolü
+    if (!user) {
+      user = demoAccounts.find(
+        (u: any) => u.email === formData.email && u.password === formData.password
       );
+    }
 
-      // Token ve kullanıcıyı kaydet
-      auth.setToken(data.token);
-      auth.setUser({
-        id: data.user.id,
-        name: data.user.firstName,
-        email: formData.email,
-        role: data.user.role,
-      });
-
+    if (user) {
+      localStorage.setItem("user", JSON.stringify(user));
       setIsLoggedIn(true);
-      toast.success(`Hoş geldiniz, ${data.user.firstName}!`);
+      toast.success(`Hoş geldiniz, ${user.name}!`);
 
-      // Role göre yönlendirme (backend "Customer"/"Admin"/"Artist" döndürüyor)
-      if (data.user.role === "Admin") {
+      // Role göre yönlendirme
+      if (user.role === "admin") {
         navigate("/admin");
-      } else if (data.user.role === "Artist") {
+      } else if (user.role === "artist") {
         navigate("/artist/dashboard");
       } else {
         navigate("/");
       }
-    } catch (err) {
-      const message =
-        err instanceof ApiError ? err.message : "Sunucuya bağlanılamadı";
-      toast.error(message);
-    } finally {
-      setIsSubmitting(false);
+    } else {
+      toast.error("E-posta veya şifre hatalı");
     }
   };
 
@@ -129,10 +115,9 @@ export default function Login({ setIsLoggedIn }: LoginProps) {
 
             <button
               type="submit"
-              disabled={isSubmitting}
-              className="w-full px-6 py-4 bg-gradient-to-r from-primary to-primary/80 text-primary-foreground rounded-2xl hover:shadow-xl hover:shadow-primary/20 transition-all duration-300 hover:scale-[1.02] font-medium disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:scale-100"
+              className="w-full px-6 py-4 bg-gradient-to-r from-primary to-primary/80 text-primary-foreground rounded-2xl hover:shadow-xl hover:shadow-primary/20 transition-all duration-300 hover:scale-[1.02] font-medium"
             >
-              {isSubmitting ? "Giriş yapılıyor..." : "Giriş Yap"}
+              Giriş Yap
             </button>
 
             <div className="text-center pt-4">
@@ -147,16 +132,19 @@ export default function Login({ setIsLoggedIn }: LoginProps) {
         </div>
 
         <div className="mt-6 p-6 bg-gradient-to-br from-primary/5 to-primary/10 border border-primary/20 rounded-2xl text-sm">
-          <p className="mb-4 font-medium text-foreground">Test Hesabı:</p>
+          <p className="mb-4 font-medium text-foreground">Demo Hesaplar:</p>
           <div className="space-y-3">
             <div className="p-3 bg-background/50 rounded-xl">
               <p className="font-medium text-foreground mb-1">👤 Kullanıcı</p>
-              <p className="text-muted-foreground">test@test.com / test123</p>
+              <p className="text-muted-foreground">user@artgallery419.com / user123</p>
             </div>
             <div className="p-3 bg-background/50 rounded-xl">
-              <p className="text-muted-foreground text-xs">
-                Yeni hesap için "Kayıt Olun" bağlantısını kullanabilirsiniz.
-              </p>
+              <p className="font-medium text-foreground mb-1">🎨 Sanatçı (Ayşe Demir)</p>
+              <p className="text-muted-foreground">artist@artgallery419.com / artist123</p>
+            </div>
+            <div className="p-3 bg-background/50 rounded-xl">
+              <p className="font-medium text-foreground mb-1">⚙️ Admin</p>
+              <p className="text-muted-foreground">admin@artgallery419.com / admin123</p>
             </div>
           </div>
         </div>
