@@ -3,189 +3,83 @@ import { Link } from "react-router";
 import { Heart, Search, SlidersHorizontal, Star, X } from "lucide-react";
 import { toast } from "sonner";
 import { ImageWithFallback } from "./figma/ImageWithFallback";
+import { api, ApiError } from "../../lib/api";
+import { auth } from "../../lib/auth";
+import type { ApiList, Artwork } from "../../lib/types";
+import { parsePrice, formatPrice, resolveImage } from "../../lib/formatters";
 
-const ARTWORKS_DATA = [
-  {
-    id: 1,
-    image: "https://images.unsplash.com/photo-1606819717115-9159c900370b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=800",
-    title: "Renklerin Dansı",
-    artist: "Ayşe Demir",
-    category: "Yağlı Boya",
-    price: 15000,
-    year: 2024,
-    rating: 4.8,
-    reviews: 24,
-    description: "Canlı renkler ve dinamik fırça darbeleriyle yaratılmış modern bir eser."
-  },
-  {
-    id: 2,
-    image: "https://images.unsplash.com/photo-1569783721854-33a99b4c0bae?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=800",
-    title: "Sessiz Anlar",
-    artist: "Mehmet Yılmaz",
-    category: "Akrilik",
-    price: 12500,
-    year: 2023,
-    rating: 4.6,
-    reviews: 18,
-    description: "İç huzuru ve sessizliği temsil eden minimalist bir çalışma."
-  },
-  {
-    id: 3,
-    image: "https://images.unsplash.com/photo-1580687580441-96dbadf8f3c8?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=800",
-    title: "İç Dünya",
-    artist: "Zeynep Kaya",
-    category: "Karma Teknik",
-    price: 18000,
-    year: 2024,
-    rating: 4.9,
-    reviews: 32,
-    description: "İnsan psikolojisini ve duygusal derinliği keşfeden bir eser."
-  },
-  {
-    id: 4,
-    image: "https://images.unsplash.com/photo-1545830384-3a2061eb44ed?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=800",
-    title: "Düşüncenin Formu",
-    artist: "Can Öztürk",
-    category: "Heykel",
-    price: 22000,
-    year: 2023,
-    rating: 4.9,
-    reviews: 31,
-    description: "Modern heykel sanatının yenilikçi bir örneği."
-  },
-  {
-    id: 5,
-    image: "https://images.unsplash.com/photo-1547826039-bfc35e0f1ea8?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=800",
-    title: "Doğanın Ritmi",
-    artist: "Elif Yıldız",
-    category: "Yağlı Boya",
-    price: 16500,
-    year: 2024,
-    rating: 4.7,
-    reviews: 21,
-    description: "Doğanın döngüsel yapısını ve enerjisini yansıtan dinamik bir kompozisyon."
-  },
-  {
-    id: 6,
-    image: "https://images.unsplash.com/photo-1577083165633-14ebcdb0f658?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=800",
-    title: "Zaman Akışı",
-    artist: "Murat Demir",
-    category: "Akrilik",
-    price: 13500,
-    year: 2025,
-    rating: 4.8,
-    reviews: 27,
-    description: "Zamanın soyut bir temsili, geçmişten geleceğe akan bir anlatı."
-  },
-  {
-    id: 7,
-    image: "https://images.unsplash.com/photo-1536924940684-b2d9a91549e7?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=800",
-    title: "Kentsel Doku",
-    artist: "Hasan Yılmaz",
-    category: "Karma Teknik",
-    price: 19500,
-    year: 2024,
-    rating: 4.9,
-    reviews: 35,
-    description: "Modern şehir hayatının karmaşık dokusunu keşfeden çok katmanlı bir eser."
-  },
-  {
-    id: 8,
-    image: "https://images.unsplash.com/photo-1561214115-f2f134cc4912?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=800",
-    title: "Sonsuzluk",
-    artist: "Can Öztürk",
-    category: "Heykel",
-    price: 25000,
-    year: 2025,
-    rating: 4.9,
-    reviews: 29,
-    description: "Sonsuzluk kavramını üç boyutta ele alan özgün bir heykel çalışması."
-  },
-  {
-    id: 9,
-    image: "https://images.unsplash.com/photo-1578301978693-85fa9c0320b9?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=800",
-    title: "Işığın İzinde",
-    artist: "Ayşe Demir",
-    category: "Yağlı Boya",
-    price: 14000,
-    year: 2023,
-    rating: 4.7,
-    reviews: 22,
-    description: "Işık ve gölge oyunlarıyla yaratılan atmosferik bir manzara."
-  },
-  {
-    id: 10,
-    image: "https://images.unsplash.com/photo-1536924940684-8e4f898b4146?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=800",
-    title: "Denge",
-    artist: "Zeynep Kaya",
-    category: "Akrilik",
-    price: 11500,
-    year: 2025,
-    rating: 4.6,
-    reviews: 19,
-    description: "Zıtlıkların uyumu ve dengenin görsel bir ifadesi."
-  },
-  {
-    id: 11,
-    image: "https://images.unsplash.com/photo-1518518873111-6ca469aa4560?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=800",
-    title: "Anıların İzi",
-    artist: "Mehmet Yılmaz",
-    category: "Karma Teknik",
-    price: 17500,
-    year: 2024,
-    rating: 4.8,
-    reviews: 26,
-    description: "Geçmişin izlerini taşıyan, nostaljik bir atmosfere sahip eser."
-  },
-  {
-    id: 12,
-    image: "https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=800",
-    title: "Metamorfoz",
-    artist: "Elif Yıldız",
-    category: "Heykel",
-    price: 21000,
-    year: 2025,
-    rating: 4.9,
-    reviews: 33,
-    description: "Dönüşüm ve evrim temalarını işleyen çağdaş bir heykel."
-  }
-];
+// Backend'den gelen favoriler ham olarak gelir; sadece artwork_id'leri tutacağız
+type FavoriteRecord = { artwork_id?: string; favorite_id?: string } & Record<string, unknown>;
 
 export default function ArtworkGallery() {
-  const [artworks] = useState(ARTWORKS_DATA);
-  const [filteredArtworks, setFilteredArtworks] = useState(ARTWORKS_DATA);
-  const [favorites, setFavorites] = useState<number[]>([]);
+  const [artworks, setArtworks] = useState<Artwork[]>([]);
+  const [filteredArtworks, setFilteredArtworks] = useState<Artwork[]>([]);
+  const [favoriteIds, setFavoriteIds] = useState<string[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [showFilters, setShowFilters] = useState(false);
   const [priceRange, setPriceRange] = useState<string>("all");
   const [sortBy, setSortBy] = useState<string>("newest");
+  const [loading, setLoading] = useState(true);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userRole, setUserRole] = useState<string | null>(null);
 
-  const categories = ["all", "Yağlı Boya", "Akrilik", "Heykel", "Karma Teknik"];
+  // Backend'den gelen kategorileri dinamik çıkaracağız + sabit bir "all"
+  const categories = ["all", ...Array.from(new Set(artworks.map((a) => a.category).filter(Boolean) as string[]))];
 
+  // Sayfa açılışında: eserleri ve (giriş varsa) favorileri yükle
   useEffect(() => {
-    const user = localStorage.getItem("user");
-    setIsLoggedIn(!!user);
+    let cancelled = false;
 
-    if (user) {
-      const userData = JSON.parse(user);
-      setUserRole(userData.role);
-    }
+    const init = async () => {
+      const loggedIn = auth.isLoggedIn();
+      const user = auth.getUser();
+      setIsLoggedIn(loggedIn);
+      setUserRole(user?.role ?? null);
 
-    const storedFavorites = JSON.parse(localStorage.getItem("favorites") || "[]");
-    setFavorites(storedFavorites);
+      try {
+        const res = await api.get<ApiList<Artwork>>("/artworks", { skipAuth: true });
+        if (cancelled) return;
+        setArtworks(res.data);
+      } catch (err) {
+        console.error("Eserler yüklenemedi:", err);
+        toast.error("Eserler yüklenemedi");
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+
+      // Favorileri çek (sadece giriş yapılmışsa)
+      if (loggedIn) {
+        try {
+          const favRes = await api.get<ApiList<FavoriteRecord>>("/favorites");
+          if (cancelled) return;
+          const ids = favRes.data
+            .map((f) => f.artwork_id)
+            .filter((id): id is string => typeof id === "string");
+          setFavoriteIds(ids);
+        } catch (err) {
+          // Sessiz başarısızlık: favoriler çekilemezse eserler yine görüntülenmeli
+          console.warn("Favoriler yüklenemedi:", err);
+        }
+      }
+    };
+
+    init();
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
+  // Filtreleme + sıralama
   useEffect(() => {
     let filtered = [...artworks];
 
     if (searchTerm) {
+      const q = searchTerm.toLowerCase();
       filtered = filtered.filter(
         (artwork) =>
-          artwork.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          artwork.artist.toLowerCase().includes(searchTerm.toLowerCase())
+          artwork.title.toLowerCase().includes(q) ||
+          (artwork.artist_name?.toLowerCase().includes(q) ?? false)
       );
     }
 
@@ -194,26 +88,28 @@ export default function ArtworkGallery() {
     }
 
     if (priceRange !== "all") {
-      if (priceRange === "0-10000") {
-        filtered = filtered.filter(a => a.price <= 10000);
-      } else if (priceRange === "10000-15000") {
-        filtered = filtered.filter(a => a.price > 10000 && a.price <= 15000);
-      } else if (priceRange === "15000-20000") {
-        filtered = filtered.filter(a => a.price > 15000 && a.price <= 20000);
-      } else if (priceRange === "20000+") {
-        filtered = filtered.filter(a => a.price > 20000);
-      }
+      filtered = filtered.filter((a) => {
+        const p = parsePrice(a.price);
+        if (priceRange === "0-10000") return p <= 10000;
+        if (priceRange === "10000-15000") return p > 10000 && p <= 15000;
+        if (priceRange === "15000-20000") return p > 15000 && p <= 20000;
+        if (priceRange === "20000+") return p > 20000;
+        return true;
+      });
     }
 
-    // Sorting
     if (sortBy === "price-low") {
-      filtered.sort((a, b) => a.price - b.price);
+      filtered.sort((a, b) => parsePrice(a.price) - parsePrice(b.price));
     } else if (sortBy === "price-high") {
-      filtered.sort((a, b) => b.price - a.price);
+      filtered.sort((a, b) => parsePrice(b.price) - parsePrice(a.price));
     } else if (sortBy === "rating") {
-      filtered.sort((a, b) => b.rating - a.rating);
+      filtered.sort((a, b) => (b.like_count ?? 0) - (a.like_count ?? 0));
     } else if (sortBy === "newest") {
-      filtered.sort((a, b) => b.year - a.year);
+      filtered.sort((a, b) => {
+        const ad = a.created_at ? new Date(a.created_at).getTime() : 0;
+        const bd = b.created_at ? new Date(b.created_at).getTime() : 0;
+        return bd - ad;
+      });
     }
 
     setFilteredArtworks(filtered);
@@ -226,19 +122,34 @@ export default function ArtworkGallery() {
     setSearchTerm("");
   };
 
-  const toggleFavorite = (artworkId: number) => {
+  const toggleFavorite = async (artworkId: string) => {
     if (!isLoggedIn) {
       toast.error("Favorilere eklemek için giriş yapmalısınız!");
       return;
     }
 
-    const newFavorites = favorites.includes(artworkId)
-      ? favorites.filter((id) => id !== artworkId)
-      : [...favorites, artworkId];
-
-    setFavorites(newFavorites);
-    localStorage.setItem("favorites", JSON.stringify(newFavorites));
+    const isFav = favoriteIds.includes(artworkId);
+    // Optimistic update: önce UI'ı güncelle, sonra API çağrısı yap
+    const previous = favoriteIds;
+    const next = isFav ? favoriteIds.filter((id) => id !== artworkId) : [...favoriteIds, artworkId];
+    setFavoriteIds(next);
     window.dispatchEvent(new Event("favoritesUpdated"));
+
+    try {
+      if (isFav) {
+        await api.delete(`/favorites/${artworkId}`);
+        toast.info("Favorilerden çıkarıldı");
+      } else {
+        await api.post("/favorites", { artworkId });
+        toast.success("Favorilere eklendi!");
+      }
+    } catch (err) {
+      // Hata olursa eski hale döndür
+      setFavoriteIds(previous);
+      window.dispatchEvent(new Event("favoritesUpdated"));
+      const message = err instanceof ApiError ? err.message : "İşlem başarısız";
+      toast.error(message);
+    }
   };
 
   return (
@@ -246,7 +157,9 @@ export default function ArtworkGallery() {
       <div className="max-w-7xl mx-auto">
         <div className="mb-12">
           <h1 className="text-6xl mb-4 font-light">Sanat Eserleri</h1>
-          <p className="text-muted-foreground text-lg font-light">{filteredArtworks.length} eser bulundu</p>
+          <p className="text-muted-foreground text-lg font-light">
+            {loading ? "Yükleniyor..." : `${filteredArtworks.length} eser bulundu`}
+          </p>
         </div>
 
         <div className="mb-8 space-y-4">
@@ -328,7 +241,7 @@ export default function ArtworkGallery() {
                       <option value="newest">En Yeni</option>
                       <option value="price-low">Fiyat (Düşük)</option>
                       <option value="price-high">Fiyat (Yüksek)</option>
-                      <option value="rating">En Yüksek Puan</option>
+                      <option value="rating">En Çok Beğenilen</option>
                     </select>
                   </div>
                 </div>
@@ -346,7 +259,18 @@ export default function ArtworkGallery() {
           )}
         </div>
 
-        {filteredArtworks.length === 0 ? (
+        {loading ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {[1, 2, 3, 4].map((i) => (
+              <div key={i} className="animate-pulse">
+                <div className="aspect-[4/5] bg-muted rounded-2xl mb-4" />
+                <div className="h-5 bg-muted rounded w-3/4 mb-2" />
+                <div className="h-4 bg-muted rounded w-1/2 mb-2" />
+                <div className="h-5 bg-muted rounded w-1/3" />
+              </div>
+            ))}
+          </div>
+        ) : filteredArtworks.length === 0 ? (
           <div className="text-center py-20">
             <p className="text-3xl text-muted-foreground mb-4 font-light">Eser bulunamadı</p>
             <p className="text-muted-foreground font-light">Lütfen farklı filtreler deneyin</p>
@@ -354,19 +278,18 @@ export default function ArtworkGallery() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {filteredArtworks.map((artwork) => (
-              <div key={artwork.id} className="group">
+              <div key={artwork.artwork_id} className="group">
                 <div className="relative overflow-hidden rounded-2xl mb-4 aspect-[4/5]">
-                  <Link to={`/artworks/${artwork.id}`}>
+                  <Link to={`/artworks/${artwork.artwork_id}`}>
                     <ImageWithFallback
-                      src={artwork.image}
+                      src={resolveImage(artwork.image_url)}
                       alt={artwork.title}
                       className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                     />
                   </Link>
-                  {/* Favoriler: Admin hariç */}
-                  {userRole !== 'admin' && (
+                  {userRole !== "Admin" && (
                     <button
-                      onClick={() => toggleFavorite(artwork.id)}
+                      onClick={() => toggleFavorite(artwork.artwork_id)}
                       className={`absolute top-4 right-4 bg-white/90 backdrop-blur-sm rounded-full p-3 hover:bg-white transition-all hover:scale-110 ${
                         !isLoggedIn ? "opacity-60" : ""
                       }`}
@@ -374,29 +297,35 @@ export default function ArtworkGallery() {
                     >
                       <Heart
                         className={`w-5 h-5 ${
-                          favorites.includes(artwork.id)
+                          favoriteIds.includes(artwork.artwork_id)
                             ? "fill-red-500 text-red-500"
                             : "text-muted-foreground"
                         }`}
                       />
                     </button>
                   )}
-                  <div className="absolute bottom-4 left-4 bg-primary/90 backdrop-blur-sm text-primary-foreground px-4 py-2 rounded-full text-sm">
-                    {artwork.category}
-                  </div>
+                  {artwork.category && (
+                    <div className="absolute bottom-4 left-4 bg-primary/90 backdrop-blur-sm text-primary-foreground px-4 py-2 rounded-full text-sm">
+                      {artwork.category}
+                    </div>
+                  )}
                 </div>
-                <Link to={`/artworks/${artwork.id}`}>
+                <Link to={`/artworks/${artwork.artwork_id}`}>
                   <h3 className="text-xl mb-1 hover:text-primary transition-colors font-light">
                     {artwork.title}
                   </h3>
                 </Link>
-                <p className="text-sm text-muted-foreground mb-2 font-light">{artwork.artist}</p>
+                <p className="text-sm text-muted-foreground mb-2 font-light">
+                  {artwork.artist_name || "Bilinmeyen sanatçı"}
+                </p>
                 <div className="flex items-center justify-between">
-                  <p className="text-lg font-medium">₺{artwork.price.toLocaleString('tr-TR')}</p>
-                  <div className="flex items-center space-x-1 text-sm text-muted-foreground">
-                    <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                    <span>{artwork.rating}</span>
-                  </div>
+                  <p className="text-lg font-medium">{formatPrice(artwork.price)}</p>
+                  {(artwork.like_count ?? 0) > 0 && (
+                    <div className="flex items-center space-x-1 text-sm text-muted-foreground">
+                      <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                      <span>{artwork.like_count}</span>
+                    </div>
+                  )}
                 </div>
               </div>
             ))}

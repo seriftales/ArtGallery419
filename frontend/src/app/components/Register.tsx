@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router";
 import { User, Mail, Lock, Eye, EyeOff, Phone, Sparkles } from "lucide-react";
 import { toast } from "sonner";
+import { api, ApiError } from "../../lib/api";
 
 export default function Register() {
   const navigate = useNavigate();
@@ -15,8 +16,25 @@ export default function Register() {
   });
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  // UI'da küçük harf "user"/"artist" tutuluyor; backend "Customer"/"Artist" istiyor.
+  const mapRole = (uiRole: string): string => {
+    if (uiRole === "artist") return "Artist";
+    return "Customer";
+  };
+
+  // "Ahmet Yılmaz" -> firstName="Ahmet", lastName="Yılmaz"
+  // "Ahmet" -> firstName="Ahmet", lastName=""
+  // "Ahmet Can Yılmaz" -> firstName="Ahmet", lastName="Can Yılmaz"
+  const splitName = (full: string): { firstName: string; lastName: string } => {
+    const parts = full.trim().split(/\s+/);
+    const firstName = parts[0] || "";
+    const lastName = parts.slice(1).join(" ");
+    return { firstName, lastName };
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
 
@@ -35,26 +53,30 @@ export default function Register() {
       return;
     }
 
-    const users = JSON.parse(localStorage.getItem("users") || "[]");
+    setIsSubmitting(true);
+    try {
+      const { firstName, lastName } = splitName(formData.name);
+      await api.post(
+        "/auth/register",
+        {
+          firstName,
+          lastName,
+          email: formData.email,
+          password: formData.password,
+          role: mapRole(formData.role),
+        },
+        { skipAuth: true }
+      );
 
-    if (users.find((u: any) => u.email === formData.email)) {
-      setError("Bu e-posta adresi zaten kullanılıyor");
-      return;
+      toast.success("Kayıt başarılı! Şimdi giriş yapabilirsiniz.");
+      navigate("/login");
+    } catch (err) {
+      const message =
+        err instanceof ApiError ? err.message : "Sunucuya bağlanılamadı";
+      setError(message);
+    } finally {
+      setIsSubmitting(false);
     }
-
-    const newUser = {
-      id: Date.now(),
-      name: formData.name,
-      email: formData.email,
-      phone: formData.phone,
-      password: formData.password,
-      role: formData.role,
-      createdAt: new Date().toISOString()
-    };
-
-    localStorage.setItem("users", JSON.stringify([...users, newUser]));
-    toast.success("Kayıt başarılı! Şimdi giriş yapabilirsiniz.");
-    navigate("/login");
   };
 
   return (
@@ -173,9 +195,10 @@ export default function Register() {
 
             <button
               type="submit"
-              className="w-full px-6 py-4 bg-gradient-to-r from-primary to-primary/80 text-primary-foreground rounded-2xl hover:shadow-xl hover:shadow-primary/20 transition-all duration-300 hover:scale-[1.02] font-medium mt-6"
+              disabled={isSubmitting}
+              className="w-full px-6 py-4 bg-gradient-to-r from-primary to-primary/80 text-primary-foreground rounded-2xl hover:shadow-xl hover:shadow-primary/20 transition-all duration-300 hover:scale-[1.02] font-medium mt-6 disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:scale-100"
             >
-              Kayıt Ol
+              {isSubmitting ? "Kayıt yapılıyor..." : "Kayıt Ol"}
             </button>
 
             <div className="text-center pt-4">

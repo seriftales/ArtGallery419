@@ -3,131 +3,22 @@ import { useParams, Link, useNavigate } from "react-router";
 import { Heart, Star, ArrowLeft, ShoppingCart, ThumbsUp, Share2, Tag, Check, User, Mail, Phone } from "lucide-react";
 import { toast } from "sonner";
 import { ImageWithFallback } from "./figma/ImageWithFallback";
+import { api, ApiError } from "../../lib/api";
+import { auth } from "../../lib/auth";
+import type { ApiList, ApiItem, Artwork, Review } from "../../lib/types";
+import { parsePrice, formatPrice, resolveImage } from "../../lib/formatters";
 
-const ARTWORKS_DATA: Record<number, any> = {
-  1: {
-    id: 1,
-    image: "https://images.unsplash.com/photo-1606819717115-9159c900370b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=1200",
-    title: "Renklerin Dansı",
-    artist: "Ayşe Demir",
-    category: "Yağlı Boya",
-    price: 15000,
-    year: 2024,
-    size: "100x80 cm",
-    rating: 4.8,
-    reviews: 24,
-    views: 342,
-    description: "Canlı renkler ve dinamik fırça darbeleriyle yaratılmış modern bir eser. Sanatçının doğa ve insan ruhunun uyumunu yansıttığı bu çalışma, izleyiciyi içsel bir yolculuğa çıkarıyor.",
-    technique: "Tuval üzerine yağlı boya"
-  },
-  2: {
-    id: 2,
-    image: "https://images.unsplash.com/photo-1569783721854-33a99b4c0bae?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=1200",
-    title: "Sessiz Anlar",
-    artist: "Mehmet Yılmaz",
-    category: "Akrilik",
-    price: 12500,
-    year: 2023,
-    size: "90x70 cm",
-    rating: 4.6,
-    reviews: 18,
-    views: 215,
-    description: "İç huzuru ve sessizliği temsil eden minimalist bir çalışma.",
-    technique: "Tuval üzerine akrilik"
-  },
-  3: {
-    id: 3,
-    image: "https://images.unsplash.com/photo-1580687580441-96dbadf8f3c8?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=1200",
-    title: "İç Dünya",
-    artist: "Zeynep Kaya",
-    category: "Karma Teknik",
-    price: 18000,
-    year: 2024,
-    size: "120x100 cm",
-    rating: 4.9,
-    reviews: 32,
-    views: 428,
-    description: "İnsan psikolojisini ve duygusal derinliği keşfeden bir eser.",
-    technique: "Karma teknik"
-  }
-};
-
-const REVIEWS_BY_ARTWORK: Record<number, any[]> = {
-  1: [
-    {
-      id: 1,
-      userName: "Elif Yıldız",
-      rating: 5,
-      comment: "Harika bir eser! Renk kullanımı ve tekniği gerçekten etkileyici. Evime çok yakıştı.",
-      date: "2026-05-10",
-      helpful: 12,
-      verified: true,
-      artistReply: {
-        name: "Ayşe Demir",
-        comment: "Çok teşekkür ederim! Bu eserin sizin evinizde olması beni çok mutlu etti. İyi günlerde kullanın!",
-        date: "2026-05-11"
-      }
-    },
-    {
-      id: 2,
-      userName: "Mehmet Kara",
-      rating: 4,
-      comment: "Çok güzel bir çalışma. Fiyatı biraz yüksek ama kalitesi buna değer.",
-      date: "2026-05-08",
-      helpful: 8,
-      verified: true
-    },
-    {
-      id: 3,
-      userName: "Selin Ak",
-      rating: 5,
-      comment: "Bu eserdeki detaylar inanılmaz. Sanatçının ustalığı her fırça darbesinde hissediliyor.",
-      date: "2026-05-06",
-      helpful: 15,
-      verified: true
-    }
-  ],
-  2: [
-    {
-      id: 4,
-      userName: "Ahmet Yılmaz",
-      rating: 5,
-      comment: "Minimalist yaklaşımı ve huzur veren atmosferi çok beğendim. Harika!",
-      date: "2026-05-09",
-      helpful: 7,
-      verified: true
-    }
-  ],
-  3: [
-    {
-      id: 5,
-      userName: "Deniz Kaya",
-      rating: 5,
-      comment: "Derin ve düşündürücü bir eser. İçsel yolculuğa çıkarıyor.",
-      date: "2026-05-07",
-      helpful: 10,
-      verified: true
-    },
-    {
-      id: 6,
-      userName: "Cem Özkan",
-      rating: 4,
-      comment: "Teknik olarak mükemmel. Çok etkileyici bir çalışma.",
-      date: "2026-05-05",
-      helpful: 5,
-      verified: true
-    }
-  ]
-};
+type FavoriteRecord = { artwork_id?: string } & Record<string, unknown>;
 
 export default function ArtworkDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const artworkId = parseInt(id || "1");
-  const artwork = ARTWORKS_DATA[artworkId] || ARTWORKS_DATA[1];
+
+  const [artwork, setArtwork] = useState<Artwork | null>(null);
+  const [loading, setLoading] = useState(true);
   const [isFavorite, setIsFavorite] = useState(false);
-  const [reviews, setReviews] = useState<any[]>([]);
-  const [helpfulReviews, setHelpfulReviews] = useState<number[]>([]);
+  const [reviews, setReviews] = useState<Review[]>([]);
+  const [helpfulReviews, setHelpfulReviews] = useState<string[]>([]);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userRole, setUserRole] = useState<string | null>(null);
   const [userName, setUserName] = useState("");
@@ -136,7 +27,7 @@ export default function ArtworkDetail() {
   const [campaignCode, setCampaignCode] = useState("");
   const [discount, setDiscount] = useState(0);
   const [campaignError, setCampaignError] = useState("");
-  const [replyingTo, setReplyingTo] = useState<number | null>(null);
+  const [replyingTo, setReplyingTo] = useState<string | null>(null);
   const [replyText, setReplyText] = useState("");
   const [purchaseFormData, setPurchaseFormData] = useState({
     name: "",
@@ -145,64 +36,112 @@ export default function ArtworkDetail() {
     address: "",
     notes: ""
   });
+  const [submittingPurchase, setSubmittingPurchase] = useState(false);
 
-  const CAMPAIGN_CODES: Record<string, { discount: number; description: string }> = {
-    "SANAT20": { discount: 20, description: "%20 İndirim" },
-    "ESER15": { discount: 15, description: "%15 İndirim" },
-    "YAZ2026": { discount: 25, description: "%25 Yaz İndirimi" }
-  };
-
+  // İlk yükleme: eser + auth durum + favoriler + yorumlar
   useEffect(() => {
-    const user = localStorage.getItem("user");
-    setIsLoggedIn(!!user);
+    if (!id) return;
+    let cancelled = false;
 
-    if (user) {
-      const userData = JSON.parse(user);
-      setUserRole(userData.role);
-      setUserName(userData.name);
-    }
+    const loggedIn = auth.isLoggedIn();
+    const user = auth.getUser();
+    setIsLoggedIn(loggedIn);
+    setUserRole(user?.role ?? null);
+    setUserName(user?.name ?? "");
 
-    const favorites = JSON.parse(localStorage.getItem("favorites") || "[]");
-    setIsFavorite(favorites.includes(artworkId));
+    const load = async () => {
+      try {
+        // Backend'de /api/artworks/:id endpoint'i yok, listeden filtreliyoruz
+        const res = await api.get<ApiList<Artwork>>("/artworks", { skipAuth: true });
+        if (cancelled) return;
+        const found = res.data.find((a) => a.artwork_id === id);
+        setArtwork(found || null);
+      } catch (err) {
+        console.error("Eser yüklenemedi:", err);
+        toast.error("Eser yüklenemedi");
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
 
-    // Her eser için yorumları yükle
-    setReviews(REVIEWS_BY_ARTWORK[artworkId] || []);
-  }, [id, artworkId]);
+      // Yorumları getir (public endpoint)
+      try {
+        const reviewsRes = await api.get<ApiList<Review>>(`/reviews/${id}`, { skipAuth: true });
+        if (cancelled) return;
+        setReviews(reviewsRes.data || []);
+      } catch (err) {
+        // 404 vs olabilir, sessizce geç
+        console.warn("Yorumlar yüklenemedi:", err);
+      }
 
-  const toggleFavorite = () => {
+      // Favori durumu (giriş varsa)
+      if (loggedIn) {
+        try {
+          const favRes = await api.get<ApiList<FavoriteRecord>>("/favorites");
+          if (cancelled) return;
+          setIsFavorite(favRes.data.some((f) => f.artwork_id === id));
+        } catch (err) {
+          console.warn("Favori durumu okunamadı:", err);
+        }
+      }
+    };
+
+    load();
+    return () => {
+      cancelled = true;
+    };
+  }, [id]);
+
+  const toggleFavorite = async () => {
     if (!isLoggedIn) {
       toast.error("Favorilere eklemek için giriş yapmalısınız!");
       return;
     }
+    if (!artwork) return;
 
-    const favorites = JSON.parse(localStorage.getItem("favorites") || "[]");
-    const artworkId = parseInt(id || "1");
-
-    const newFavorites = favorites.includes(artworkId)
-      ? favorites.filter((fId: number) => fId !== artworkId)
-      : [...favorites, artworkId];
-
-    localStorage.setItem("favorites", JSON.stringify(newFavorites));
-    setIsFavorite(!isFavorite);
+    const prev = isFavorite;
+    setIsFavorite(!prev);
     window.dispatchEvent(new Event("favoritesUpdated"));
 
-    if (newFavorites.includes(artworkId)) {
-      toast.success("Favorilere eklendi!");
-    } else {
-      toast.info("Favorilerden çıkarıldı");
+    try {
+      if (prev) {
+        await api.delete(`/favorites/${artwork.artwork_id}`);
+        toast.info("Favorilerden çıkarıldı");
+      } else {
+        await api.post("/favorites", { artworkId: artwork.artwork_id });
+        toast.success("Favorilere eklendi!");
+      }
+    } catch (err) {
+      setIsFavorite(prev);
+      window.dispatchEvent(new Event("favoritesUpdated"));
+      const message = err instanceof ApiError ? err.message : "İşlem başarısız";
+      toast.error(message);
     }
   };
 
-  const toggleHelpful = (reviewId: number) => {
-    setHelpfulReviews(prev =>
-      prev.includes(reviewId) ? prev.filter(id => id !== reviewId) : [...prev, reviewId]
-    );
+  const toggleHelpful = async (reviewId: string) => {
+    if (!isLoggedIn) {
+      toast.error("Oy vermek için giriş yapmalısınız!");
+      return;
+    }
+
+    const already = helpfulReviews.includes(reviewId);
+    const next = already ? helpfulReviews.filter((id) => id !== reviewId) : [...helpfulReviews, reviewId];
+    setHelpfulReviews(next);
+
+    try {
+      await api.patch(`/reviews/${reviewId}/vote`);
+    } catch (err) {
+      // Geri al
+      setHelpfulReviews(helpfulReviews);
+      const message = err instanceof ApiError ? err.message : "Oy verilemedi";
+      toast.error(message);
+    }
   };
 
   const handleShare = (platform: string) => {
+    if (!artwork) return;
     const url = window.location.href;
-    const text = `${artwork.title} - ${artwork.artist} | ArtGallery419`;
-
+    const text = `${artwork.title} - ${artwork.artist_name || ""} | ArtGallery419`;
     let shareUrl = "";
 
     switch (platform) {
@@ -216,7 +155,6 @@ export default function ArtworkDetail() {
         shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`;
         break;
       default:
-        // Copy to clipboard
         navigator.clipboard.writeText(url);
         toast.success("Link kopyalandı!");
         setShowShareMenu(false);
@@ -225,83 +163,143 @@ export default function ArtworkDetail() {
 
     window.open(shareUrl, "_blank", "width=600,height=400");
     setShowShareMenu(false);
-    toast.success(`${platform === "whatsapp" ? "WhatsApp" : platform === "twitter" ? "Twitter" : "Facebook"}'ta paylaşılıyor...`);
   };
 
-  const applyCampaignCode = () => {
-    const code = campaignCode.toUpperCase();
-    if (CAMPAIGN_CODES[code]) {
-      setDiscount(CAMPAIGN_CODES[code].discount);
-      setCampaignError("");
-      toast.success(`${CAMPAIGN_CODES[code].description} uygulandı!`);
-    } else {
+  const applyCampaignCode = async () => {
+    if (!campaignCode.trim()) {
+      setCampaignError("Lütfen bir kod girin");
+      return;
+    }
+    if (!isLoggedIn) {
+      toast.error("Kampanya kodu kullanmak için giriş yapmalısınız!");
+      return;
+    }
+
+    try {
+      // Backend response formatı kesin değil — esnek davranıyoruz
+      const result = await api.post<{ discount?: number; discount_percent?: number; valid?: boolean; message?: string }>(
+        "/coupons/validate",
+        { code: campaignCode.toUpperCase() }
+      );
+      const pct = result.discount_percent ?? result.discount ?? 0;
+      if (pct > 0) {
+        setDiscount(pct);
+        setCampaignError("");
+        toast.success(`%${pct} indirim uygulandı!`);
+      } else {
+        setDiscount(0);
+        setCampaignError("Geçersiz kampanya kodu!");
+        toast.error("Geçersiz kampanya kodu!");
+      }
+    } catch (err) {
       setDiscount(0);
-      setCampaignError("Geçersiz kampanya kodu!");
-      toast.error("Geçersiz kampanya kodu!");
+      const message = err instanceof ApiError ? err.message : "Kupon doğrulanamadı";
+      setCampaignError(message);
+      toast.error(message);
     }
   };
 
   const calculateTotal = () => {
-    const subtotal = artwork.price;
+    if (!artwork) return 0;
+    const subtotal = parsePrice(artwork.price);
     const discountAmount = (subtotal * discount) / 100;
     return subtotal - discountAmount;
   };
 
-  const handlePurchase = (e: React.FormEvent) => {
+  const handlePurchase = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!artwork) return;
 
-    const totalPrice = calculateTotal();
-
-    const purchase = {
-      id: Date.now(),
-      artworkId: artwork.id,
-      artworkTitle: artwork.title,
-      artworkArtist: artwork.artist,
-      price: artwork.price,
-      totalPrice,
-      campaignCode: discount > 0 ? campaignCode : null,
-      discount,
-      ...purchaseFormData,
-      status: "confirmed",
-      createdAt: new Date().toISOString()
-    };
-
-    const existingPurchases = JSON.parse(localStorage.getItem("purchases") || "[]");
-    localStorage.setItem("purchases", JSON.stringify([...existingPurchases, purchase]));
-
-    toast.success(`Satın alım başarılı! Toplam: ₺${totalPrice.toLocaleString()}`);
-    setShowPurchaseForm(false);
-    navigate("/profile");
+    setSubmittingPurchase(true);
+    try {
+      await api.post("/orders", {
+        artworkId: artwork.artwork_id,
+        couponCode: discount > 0 ? campaignCode : undefined,
+        shippingAddress: purchaseFormData.address,
+        contactName: purchaseFormData.name,
+        contactEmail: purchaseFormData.email,
+        contactPhone: purchaseFormData.phone,
+        notes: purchaseFormData.notes,
+      });
+      const totalPrice = calculateTotal();
+      toast.success(`Satın alım başarılı! Toplam: ₺${totalPrice.toLocaleString("tr-TR")}`);
+      setShowPurchaseForm(false);
+      navigate("/profile");
+    } catch (err) {
+      const message = err instanceof ApiError ? err.message : "Satın alma başarısız";
+      toast.error(message);
+    } finally {
+      setSubmittingPurchase(false);
+    }
   };
 
-  const handleArtistReply = (reviewId: number) => {
+  const handleArtistReply = async (reviewId: string) => {
     if (!replyText.trim()) {
       toast.error("Lütfen bir yanıt yazın");
       return;
     }
 
-    // Yanıtı ekle
-    const updatedReviews = reviews.map(review => {
-      if (review.id === reviewId) {
-        return {
-          ...review,
-          artistReply: {
-            name: userName,
-            comment: replyText,
-            date: new Date().toISOString()
-          }
-        };
-      }
-      return review;
-    });
-
-    setReviews(updatedReviews);
-    toast.success("Yanıtınız gönderildi!");
-    setReplyText("");
-    setReplyingTo(null);
+    try {
+      await api.patch(`/reviews/${reviewId}/reply`, { reply: replyText });
+      // Lokal state'i güncelle
+      setReviews((prev) =>
+        prev.map((r) =>
+          r.review_id === reviewId
+            ? { ...r, artist_reply: replyText, artist_reply_date: new Date().toISOString() }
+            : r
+        )
+      );
+      toast.success("Yanıtınız gönderildi!");
+      setReplyText("");
+      setReplyingTo(null);
+    } catch (err) {
+      const message = err instanceof ApiError ? err.message : "Yanıt gönderilemedi";
+      toast.error(message);
+    }
   };
 
-  const averageRating = reviews.length > 0 ? reviews.reduce((acc, r) => acc + r.rating, 0) / reviews.length : 0;
+  const averageRating = reviews.length > 0
+    ? reviews.reduce((acc, r) => acc + (r.rating || 0), 0) / reviews.length
+    : 0;
+
+  // Yükleniyor durumu
+  if (loading) {
+    return (
+      <div className="min-h-screen py-32 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto">
+          <div className="animate-pulse grid grid-cols-1 lg:grid-cols-2 gap-12">
+            <div className="aspect-[4/5] bg-muted rounded-3xl" />
+            <div className="space-y-6">
+              <div className="h-8 bg-muted rounded w-1/4" />
+              <div className="h-12 bg-muted rounded w-3/4" />
+              <div className="h-6 bg-muted rounded w-1/2" />
+              <div className="h-16 bg-muted rounded" />
+              <div className="h-32 bg-muted rounded" />
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Eser bulunamadı
+  if (!artwork) {
+    return (
+      <div className="min-h-screen py-32 px-4 sm:px-6 lg:px-8 flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-4xl font-light mb-4">Eser bulunamadı</h1>
+          <p className="text-muted-foreground mb-6">Aradığınız eser silinmiş veya hiç var olmamış olabilir.</p>
+          <Link
+            to="/artworks"
+            className="inline-flex items-center space-x-2 px-6 py-3 bg-primary text-primary-foreground rounded-2xl hover:shadow-xl transition-all"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            <span>Eserlere Dön</span>
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen py-32 px-4 sm:px-6 lg:px-8">
@@ -319,12 +317,11 @@ export default function ArtworkDetail() {
           <div className="relative">
             <div className="sticky top-32">
               <ImageWithFallback
-                src={artwork.image}
+                src={resolveImage(artwork.image_url)}
                 alt={artwork.title}
                 className="w-full rounded-3xl shadow-2xl"
               />
-              {/* Favoriler: Admin hariç */}
-              {userRole !== 'admin' && (
+              {userRole !== "Admin" && (
                 <button
                   onClick={toggleFavorite}
                   className={`absolute top-6 right-6 bg-white/90 backdrop-blur-sm rounded-full p-4 hover:bg-white transition-all hover:scale-110 shadow-lg ${
@@ -344,16 +341,20 @@ export default function ArtworkDetail() {
 
           {/* Details */}
           <div>
-            <div className="mb-4">
-              <span className="px-4 py-2 bg-primary/10 text-primary rounded-full text-sm font-medium">
-                {artwork.category}
-              </span>
-            </div>
+            {artwork.category && (
+              <div className="mb-4">
+                <span className="px-4 py-2 bg-primary/10 text-primary rounded-full text-sm font-medium">
+                  {artwork.category}
+                </span>
+              </div>
+            )}
 
             <h1 className="text-5xl md:text-6xl mb-4 font-light">{artwork.title}</h1>
-            <p className="text-2xl text-muted-foreground mb-8 font-light">{artwork.artist}</p>
+            <p className="text-2xl text-muted-foreground mb-8 font-light">
+              {artwork.artist_name || "Bilinmeyen sanatçı"}
+            </p>
 
-            <div className="flex items-center space-x-6 mb-8 pb-8 border-b border-border">
+            <div className="flex items-center flex-wrap gap-x-6 gap-y-2 mb-8 pb-8 border-b border-border">
               <div className="flex items-center space-x-2">
                 <div className="flex">
                   {[1, 2, 3, 4, 5].map((star) => (
@@ -371,34 +372,36 @@ export default function ArtworkDetail() {
               </div>
               <span className="text-muted-foreground">•</span>
               <span className="text-muted-foreground">{reviews.length} değerlendirme</span>
-              <span className="text-muted-foreground">•</span>
-              <span className="text-muted-foreground">{artwork.views} görüntülenme</span>
+              {(artwork.view_count ?? 0) > 0 && (
+                <>
+                  <span className="text-muted-foreground">•</span>
+                  <span className="text-muted-foreground">{artwork.view_count} görüntülenme</span>
+                </>
+              )}
+              {(artwork.like_count ?? 0) > 0 && (
+                <>
+                  <span className="text-muted-foreground">•</span>
+                  <span className="text-muted-foreground">{artwork.like_count} beğeni</span>
+                </>
+              )}
             </div>
 
-            <div className="text-5xl mb-8 font-light">₺{artwork.price.toLocaleString('tr-TR')}</div>
+            <div className="text-5xl mb-8 font-light">{formatPrice(artwork.price)}</div>
 
-            <div className="space-y-4 mb-8 p-6 bg-muted/30 rounded-2xl">
-              <div className="flex justify-between py-3 border-b border-border/50">
-                <span className="text-muted-foreground font-light">Boyut</span>
-                <span>{artwork.size}</span>
+            {artwork.description && (
+              <div className="mb-8">
+                <h3 className="text-2xl mb-4 font-light">Açıklama</h3>
+                <p className="text-muted-foreground leading-relaxed font-light">{artwork.description}</p>
               </div>
-              <div className="flex justify-between py-3 border-b border-border/50">
-                <span className="text-muted-foreground font-light">Yıl</span>
-                <span>{artwork.year}</span>
-              </div>
-              <div className="flex justify-between py-3">
-                <span className="text-muted-foreground font-light">Teknik</span>
-                <span>{artwork.technique}</span>
-              </div>
-            </div>
+            )}
 
-            <div className="mb-8">
-              <h3 className="text-2xl mb-4 font-light">Açıklama</h3>
-              <p className="text-muted-foreground leading-relaxed font-light">{artwork.description}</p>
-            </div>
+            {artwork.stock_status && artwork.stock_status !== "Available" && (
+              <div className="mb-6 p-4 bg-yellow-500/10 border border-yellow-500/30 rounded-2xl text-yellow-700 text-sm">
+                Bu eser şu anda satın alınamıyor (Durum: {artwork.stock_status}).
+              </div>
+            )}
 
-            {/* Admin: Sadece görüntüleme */}
-            {userRole === 'admin' ? (
+            {userRole === "Admin" ? (
               <div className="p-6 bg-muted/30 rounded-2xl border border-border/50">
                 <p className="text-center text-muted-foreground font-light">
                   Bu eser admin panelinden yönetilebilir
@@ -414,7 +417,8 @@ export default function ArtworkDetail() {
                       setShowPurchaseForm(true);
                     }
                   }}
-                  className="flex-1 px-8 py-5 bg-gradient-to-r from-primary to-primary/80 text-primary-foreground rounded-2xl hover:shadow-2xl hover:shadow-primary/20 transition-all duration-300 hover:scale-105 flex items-center justify-center space-x-2"
+                  disabled={artwork.stock_status !== "Available"}
+                  className="flex-1 px-8 py-5 bg-gradient-to-r from-primary to-primary/80 text-primary-foreground rounded-2xl hover:shadow-2xl hover:shadow-primary/20 transition-all duration-300 hover:scale-105 flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
                 >
                   <ShoppingCart className="w-5 h-5" />
                   <span className="font-medium">Satın Al</span>
@@ -536,7 +540,7 @@ export default function ArtworkDetail() {
                         type="text"
                         value={campaignCode}
                         onChange={(e) => setCampaignCode(e.target.value.toUpperCase())}
-                        placeholder="SANAT20"
+                        placeholder="Kupon kodunuz"
                         className="w-full pl-10 pr-4 py-3 bg-background border border-border/50 rounded-2xl focus:outline-none focus:ring-2 focus:ring-primary/50"
                       />
                     </div>
@@ -563,26 +567,27 @@ export default function ArtworkDetail() {
                   <div className="space-y-2">
                     <div className="flex justify-between items-center text-muted-foreground font-light">
                       <span>Ara Toplam</span>
-                      <span>₺{artwork.price.toLocaleString()}</span>
+                      <span>{formatPrice(artwork.price)}</span>
                     </div>
                     {discount > 0 && (
                       <div className="flex justify-between items-center text-green-600 font-light">
                         <span>İndirim (%{discount})</span>
-                        <span>-₺{((artwork.price * discount) / 100).toLocaleString()}</span>
+                        <span>-₺{((parsePrice(artwork.price) * discount) / 100).toLocaleString("tr-TR")}</span>
                       </div>
                     )}
                     <div className="flex justify-between items-center mb-4 pt-2 border-t border-border/30">
                       <span className="text-muted-foreground font-light">Toplam Tutar</span>
-                      <span className="text-3xl font-light">₺{calculateTotal().toLocaleString()}</span>
+                      <span className="text-3xl font-light">₺{calculateTotal().toLocaleString("tr-TR")}</span>
                     </div>
                   </div>
                 </div>
 
                 <button
                   type="submit"
-                  className="w-full px-6 py-4 bg-gradient-to-r from-primary to-primary/80 text-primary-foreground rounded-2xl hover:shadow-xl hover:shadow-primary/20 transition-all duration-300 hover:scale-105 font-medium"
+                  disabled={submittingPurchase}
+                  className="w-full px-6 py-4 bg-gradient-to-r from-primary to-primary/80 text-primary-foreground rounded-2xl hover:shadow-xl hover:shadow-primary/20 transition-all duration-300 hover:scale-105 font-medium disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:scale-100"
                 >
-                  Satın Alımı Onayla
+                  {submittingPurchase ? "İşleniyor..." : "Satın Alımı Onayla"}
                 </button>
 
                 <button
@@ -608,106 +613,101 @@ export default function ArtworkDetail() {
           ) : (
             <div className="space-y-6">
               {reviews.map((review) => (
-              <div key={review.id} className="p-6 bg-muted/30 rounded-2xl backdrop-blur-sm border border-border/50">
-                <div className="flex items-start justify-between mb-4">
-                  <div>
-                    <div className="flex items-center space-x-2 mb-1">
-                      <p className="font-medium">{review.userName}</p>
-                      {review.verified && (
-                        <span className="px-2 py-0.5 bg-green-500/10 text-green-600 text-xs rounded-full font-medium">
-                          Doğrulanmış Alıcı
+                <div key={review.review_id} className="p-6 bg-muted/30 rounded-2xl backdrop-blur-sm border border-border/50">
+                  <div className="flex items-start justify-between mb-4">
+                    <div>
+                      <p className="font-medium">{review.user_name || "Anonim"}</p>
+                      <p className="text-sm text-muted-foreground font-light">
+                        {review.created_at ? new Date(review.created_at).toLocaleDateString("tr-TR") : ""}
+                      </p>
+                    </div>
+                    <div className="flex">
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <Star
+                          key={star}
+                          className={`w-4 h-4 ${
+                            star <= (review.rating || 0)
+                              ? "fill-yellow-400 text-yellow-400"
+                              : "text-gray-300"
+                          }`}
+                        />
+                      ))}
+                    </div>
+                  </div>
+
+                  <p className="mb-4 leading-relaxed font-light">{review.comment}</p>
+
+                  {review.artist_reply && (
+                    <div className="ml-6 mt-4 p-4 bg-primary/5 border-l-4 border-primary rounded-lg">
+                      <div className="flex items-center space-x-2 mb-2">
+                        <p className="font-medium text-primary">Sanatçı yanıtı</p>
+                        <span className="px-2 py-0.5 bg-primary/10 text-primary text-xs rounded-full font-medium">
+                          Sanatçı
                         </span>
+                      </div>
+                      {review.artist_reply_date && (
+                        <p className="text-sm text-muted-foreground font-light mb-1">
+                          {new Date(review.artist_reply_date).toLocaleDateString("tr-TR")}
+                        </p>
+                      )}
+                      <p className="font-light leading-relaxed">{review.artist_reply}</p>
+                    </div>
+                  )}
+
+                  {/* Sanatçı yanıt formu — Artist rolü ve henüz yanıtlanmamış yorumlar için */}
+                  {userRole === "Artist" && !review.artist_reply && (
+                    <div className="mt-4">
+                      {replyingTo === review.review_id ? (
+                        <div className="ml-6 space-y-3">
+                          <textarea
+                            value={replyText}
+                            onChange={(e) => setReplyText(e.target.value)}
+                            className="w-full px-4 py-3 bg-background border border-border/50 rounded-2xl focus:outline-none focus:ring-2 focus:ring-primary/50"
+                            rows={3}
+                            placeholder="Yanıtınızı yazın..."
+                          />
+                          <div className="flex gap-2">
+                            <button
+                              onClick={() => handleArtistReply(review.review_id)}
+                              className="px-4 py-2 bg-primary text-primary-foreground rounded-xl hover:bg-primary/90 transition-colors text-sm"
+                            >
+                              Yanıtla
+                            </button>
+                            <button
+                              onClick={() => {
+                                setReplyingTo(null);
+                                setReplyText("");
+                              }}
+                              className="px-4 py-2 bg-secondary text-secondary-foreground rounded-xl hover:bg-secondary/80 transition-colors text-sm"
+                            >
+                              İptal
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <button
+                          onClick={() => setReplyingTo(review.review_id)}
+                          className="text-sm text-primary hover:underline ml-6"
+                        >
+                          Yanıt Ver
+                        </button>
                       )}
                     </div>
-                    <p className="text-sm text-muted-foreground font-light">
-                      {new Date(review.date).toLocaleDateString('tr-TR')}
-                    </p>
-                  </div>
-                  <div className="flex">
-                    {[1, 2, 3, 4, 5].map((star) => (
-                      <Star
-                        key={star}
-                        className={`w-4 h-4 ${
-                          star <= review.rating
-                            ? "fill-yellow-400 text-yellow-400"
-                            : "text-gray-300"
-                        }`}
-                      />
-                    ))}
-                  </div>
+                  )}
+
+                  <button
+                    onClick={() => toggleHelpful(review.review_id)}
+                    className={`flex items-center space-x-2 text-sm transition-colors mt-4 ${
+                      helpfulReviews.includes(review.review_id)
+                        ? "text-primary"
+                        : "text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    <ThumbsUp className={`w-4 h-4 ${helpfulReviews.includes(review.review_id) ? "fill-current" : ""}`} />
+                    <span>Faydalı ({(review.helpful_count ?? 0) + (helpfulReviews.includes(review.review_id) ? 1 : 0)})</span>
+                  </button>
                 </div>
-
-                <p className="mb-4 leading-relaxed font-light">{review.comment}</p>
-
-                {(review as any).artistReply && (
-                  <div className="ml-6 mt-4 p-4 bg-primary/5 border-l-4 border-primary rounded-lg">
-                    <div className="flex items-center space-x-2 mb-2">
-                      <p className="font-medium text-primary">{(review as any).artistReply.name}</p>
-                      <span className="px-2 py-0.5 bg-primary/10 text-primary text-xs rounded-full font-medium">
-                        Sanatçı
-                      </span>
-                    </div>
-                    <p className="text-sm text-muted-foreground font-light mb-1">
-                      {new Date((review as any).artistReply.date).toLocaleDateString('tr-TR')}
-                    </p>
-                    <p className="font-light leading-relaxed">{(review as any).artistReply.comment}</p>
-                  </div>
-                )}
-
-                {/* Sanatçı yanıt formu */}
-                {userRole === 'artist' && userName === artwork.artist && !((review as any).artistReply) && (
-                  <div className="mt-4">
-                    {replyingTo === review.id ? (
-                      <div className="ml-6 space-y-3">
-                        <textarea
-                          value={replyText}
-                          onChange={(e) => setReplyText(e.target.value)}
-                          className="w-full px-4 py-3 bg-background border border-border/50 rounded-2xl focus:outline-none focus:ring-2 focus:ring-primary/50"
-                          rows={3}
-                          placeholder="Yanıtınızı yazın..."
-                        />
-                        <div className="flex gap-2">
-                          <button
-                            onClick={() => handleArtistReply(review.id)}
-                            className="px-4 py-2 bg-primary text-primary-foreground rounded-xl hover:bg-primary/90 transition-colors text-sm"
-                          >
-                            Yanıtla
-                          </button>
-                          <button
-                            onClick={() => {
-                              setReplyingTo(null);
-                              setReplyText("");
-                            }}
-                            className="px-4 py-2 bg-secondary text-secondary-foreground rounded-xl hover:bg-secondary/80 transition-colors text-sm"
-                          >
-                            İptal
-                          </button>
-                        </div>
-                      </div>
-                    ) : (
-                      <button
-                        onClick={() => setReplyingTo(review.id)}
-                        className="text-sm text-primary hover:underline ml-6"
-                      >
-                        Yanıt Ver
-                      </button>
-                    )}
-                  </div>
-                )}
-
-                <button
-                  onClick={() => toggleHelpful(review.id)}
-                  className={`flex items-center space-x-2 text-sm transition-colors mt-4 ${
-                    helpfulReviews.includes(review.id)
-                      ? "text-primary"
-                      : "text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  <ThumbsUp className={`w-4 h-4 ${helpfulReviews.includes(review.id) ? "fill-current" : ""}`} />
-                  <span>Faydalı ({review.helpful + (helpfulReviews.includes(review.id) ? 1 : 0)})</span>
-                </button>
-              </div>
-            ))}
+              ))}
             </div>
           )}
         </div>
