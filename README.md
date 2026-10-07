@@ -50,7 +50,7 @@ npm install
 **2.Veritabanını Oluşturun:**
 Veritabanında artgallery adlı bir veritabanı oluşturmalısınız.
 
-*Bunlar birer örnektir şifreyi ve kullanıcı isimlerini güncelleyebilirsiniz*
+*! Bunlar birer örnektir şifreyi ve kullanıcı isimlerini güncelleyebilirsiniz.*
 
 ```bash
 sudo -u postgres psql -c "ALTER USER postgres PASSWORD 'postgres123';"
@@ -59,7 +59,7 @@ sudo -u postgres psql -c "CREATE DATABASE artgallery;"
 
 **3.Çevresel Değişkenleri Ayarlayın (.env):** 
 
-backend klasörünün içine .env adında bir dosya oluşturun ve içine kendi yerel PostgreSQL bilgilerinizi girin
+backend klasörünün içine .env adında bir dosya oluşturun ve içine kendi yerel PostgreSQL bilgilerinizi girin.
 
 ```bash
 PORT=5005
@@ -79,7 +79,7 @@ sudo -u postgres psql -d artgallery -f seed.sql
 ```
 
 **5.Veritabanı Bağlantısı:**
-Veritabanı terminaline bağlanıp SQL sorguları atmak isterseniz şu adımları uygulamanız gerekiyor:
+Veritabanı terminaline bağlanıp SQL sorguları atmak isterseniz şu adımları uygulamanız gerekmektedir.
 
 ```bash
 sudo -u postgres psql
