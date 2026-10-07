@@ -5,7 +5,118 @@ Veritabanı Yönetimi dersi için geliştirilen "Online Sanat Galerisi ve Atöly
 Bu proje bir **Monorepo**  yapısında kurgulanmıştır. Frontend ve Backend tamamen birbirinden izole edilmiş, kendi paket yönetimlerine sahip iki ayrı proje olarak aynı klasör altında yer alır.
 
 
----
+## 🚀 Kurulum Talimatları
+Projeyi yerel bilgisayarınızda ayağa kaldırmak için aşağıdaki adımları sırasıyla uygulayın.
+
+### Adım 1: Projeyi Klonlama
+
+```bash
+git clone https://github.com/seriftales/ArtGallery419.git
+
+cd ArtGallery419
+```
+
+### Adım 2 : Bağımlılıklar
+Bilgisayarınızda Node.js (v20 veya üzeri LTS) kurulu olmalıdır.
+
+```bash
+curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
+sudo apt install -y nodejs
+```
+
+Bilgisayarınızda PostgreSQL kurulu ve çalışır durumda olmalıdır.
+```bash
+sudo apt update
+sudo apt install -y postgresql postgresql-contrib
+
+```
+Cors ,Bcrypt,Express ve Multer bağımlılıkları gerekmektedir.Projenin kök dizininde kurulumları gerçekleştirin.
+
+```bash
+npm install express cors bcrypt multer
+```
+
+### Adım 3: Backend Kurulumu ve Veritabanı
+
+Backend klasörüne girip gerekli modülleri indirin ve veritabanını ayağa kaldırın.
+
+**1.Bağımlılıkları kurun:**
+
+```bash
+cd backend
+npm install
+```
+
+**2.Veritabanını Oluşturun:**
+Veritabanında artgallery adlı bir veritabanı oluşturmalısınız.
+
+*Bunlar birer örnektir şifreyi ve kullanıcı isimlerini güncelleyebilirsiniz*
+
+```bash
+sudo -u postgres psql -c "ALTER USER postgres PASSWORD 'postgres123';"
+sudo -u postgres psql -c "CREATE DATABASE artgallery;"
+```
+
+**3.Çevresel Değişkenleri Ayarlayın (.env):** 
+
+backend klasörünün içine .env adında bir dosya oluşturun ve içine kendi yerel PostgreSQL bilgilerinizi girin
+
+```bash
+PORT=5005
+DB_USER=postgres
+DB_HOST=localhost
+DB_NAME=artgallery
+DB_PASSWORD=postgres123
+DB_PORT=5432
+```
+**4.Şema ve Örnek Veri Dosyalarını Aktarın:**
+init.sql ve seed.sql dosyalarını şu şekilde çalıştırarak kurabilirsiniz.
+```bash
+cd src/db/
+sudo -u postgres psql -d artgallery -f init.sql
+sudo -u postgres psql -d artgallery -f seed.sql
+
+```
+
+**5.Veritabanı Bağlantısı:**
+Veritabanı terminaline bağlanıp SQL sorguları atmak isterseniz şu adımları uygulamanız gerekiyor:
+
+```bash
+sudo -u postgres psql
+\c artgallery
+
+```
+**6.Sunucuyu Başlatın:**
+
+```text
+npm run dev
+```
+
+*Terminalde `Server is running on port PORT` yazısını görmelisiniz.*
+
+### Adım 4: Frontend Kurulumu
+Backend çalışmaya devam ederken yeni bir terminal sekmesi açın ve frontend arayüzünü ayağa kaldırın.
+
+**1.Bağımlılıkları kurun:**
+```bash
+   cd frontend
+   npm install
+```
+**2.Çevresel Değişkenleri Ayarlayın (.env):**
+frontend klasörünün içine .env adında bir dosya oluşturun:Asagıdaki gibi bir ayarlaması olması gerekir.
+
+```bash
+VITE_API_URL=http://localhost:5005/api
+```
+**3.Arayüzü Başlatın:**
+```bash
+   npm run dev
+```
+   
+*Terminalde çıkan linke tıklayarak siteye erişebilirsiniz.*
+
+*NOT: "CORS ayarları http://localhost:3000 için yapılmıştır,kontrol sağlayın.*
+
 
 ## 📂 Proje Mimarisi 
 
@@ -28,101 +139,6 @@ ArtGallery419/
 │   │   └── db/              # init.sql 
 │   ├── index.js             # Sunucu giriş noktası
 │   ├── package.json
-│   └── .env                 # Gizli bilgiler 
+│   └── .env                 # Yapılandırma 
 
 ```
-## 🚀 Kurulum Talimatları
-Projeyi yerel bilgisayarınızda ayağa kaldırmak için aşağıdaki adımları sırasıyla uygulayın.
-
-Ön Koşullar
-Bilgisayarınızda Node.js (v20 veya üzeri LTS) kurulu olmalıdır.
-
-Bilgisayarınızda PostgreSQL kurulu ve çalışır durumda olmalıdır.
-
-Cors ,Bcrypt,Express ve Mutter bağımlılıkları gerekebilir 
-
-
-
-### Adım 1: Projeyi Klonlama
-
-```text
-git clone https://github.com/seriftales/ArtGallery419.git
-
-cd ArtGallery419
-```
-### Adım 2: Backend Kurulumu ve Veritabanı
-
-Backend klasörüne girip gerekli modülleri indirin ve veritabanını ayağa kaldırın.
-
-Bağımlılıkları kurun:
-
-```text
-cd backend
-npm install
-```
-
-**Çevresel Değişkenleri Ayarlayın (.env):**
-   `backend` klasörünün içine `.env` adında bir dosya oluşturun ve içine kendi yerel PostgreSQL bilgilerinizi girin:
-``` text 
-   env
-   PORT=5005
-   DB_USER=postgres
-   DB_HOST=localhost
-   DB_NAME=artgallery
-   DB_PASSWORD=<Password>
-   DB_PORT=<PORT>
-```
-
-Veritabanını Oluşturun:
-init.sql ve seed.sql dosyalarını şu şekilde çalıştırarak kurabilirsiniz.Veritabanında artgallery adlı bir veritabanı oluşturmalısınız.Bunları ayrı bir terminalde yapın.
-
-```text
-
-sudo -u postgres psql -d artgallery -f init.sql
-sudo -u postgres psql -d artgallery -f seed.sql
-
-```
-
-Ardından veritabanı terminaline bağlanıp SQL sorguları atmak isterseniz şu adımları uygulamanız gerekiyor:
-
-```text
-sudo -u postgres psql
-\c artgallery
-
-```
-
-Sunucuyu Başlatın:
-
-```text
-npm run dev
-```
-
-*Terminalde `Server is running on port PORT` yazısını görmelisiniz.*
-
----
-
-### Adım 3: Frontend Kurulumu
-Backend çalışmaya devam ederken yeni bir terminal sekmesi açın ve frontend arayüzünü ayağa kaldırın.
-
- **Bağımlılıkları kurun:**
-```text
-   bash
-   cd frontend
-   npm install
-```
-  Çevresel Değişkenleri Ayarlayın (.env):
-frontend klasörünün içine .env adında bir dosya oluşturun:Asagıdaki gibi bir ayarlaması olması gerekir.
-
-```text
-VITE_API_URL=http://localhost:5000/api
-```
- **Arayüzü Başlatın:
-```text
-   bash
-   npm run dev
-```
-   
- Terminalde çıkan linke tıklayarak siteye erişebilirsiniz.
-
- 
-NOT: "CORS ayarları http://localhost:3000 için yapılmıştır,kontrol sağlayın.
