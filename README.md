@@ -1,11 +1,11 @@
-# 🎨 ArtGallery419
+#  ArtGallery419
 
 Veritabanı Yönetimi dersi için geliştirilen "Online Sanat Galerisi ve Atölye Rezervasyon Sistemi" projesi. 
 
 Bu proje bir **Monorepo**  yapısında kurgulanmıştır. Frontend ve Backend tamamen birbirinden izole edilmiş, kendi paket yönetimlerine sahip iki ayrı proje olarak aynı klasör altında yer alır.
 
 
-## 🚀 Kurulum Talimatları
+##  Kurulum Talimatları
 Projeyi yerel bilgisayarınızda ayağa kaldırmak için aşağıdaki adımları sırasıyla uygulayın.
 
 ### Adım 1: Projeyi Klonlama
@@ -118,7 +118,7 @@ VITE_API_URL=http://localhost:5005/api
 *NOT: "CORS ayarları http://localhost:3000 için yapılmıştır,kontrol sağlayın.*
 
 
-## 📂 Proje Mimarisi 
+##  Proje Mimarisi 
 
 ```text
 ArtGallery419/
